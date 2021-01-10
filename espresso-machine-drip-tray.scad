@@ -82,8 +82,12 @@ module grid_edge(c="cube") {
     }
 }
 
-module foot_recess() {
-    cylinder(h=FOOT_H+foot_h_tolerance, r=FOOT_R+foot_r_tolerance, center=true);
+module foot_recess(side="right") {
+    tray_d = TRAY_BOTTOM_D-TRAY_TOP_D/2-FOOT_R-FOOT_D;
+    tray_w = TRAY_W/2-FOOT_R-FOOT_W;
+    tray_w_side = (side == "left") ? -tray_w : tray_w;
+     translate([tray_w_side, -tray_d, -tray_h/2+(FOOT_H+foot_h_tolerance)/2])
+        cylinder(h=FOOT_H+foot_h_tolerance, r=FOOT_R+foot_r_tolerance, center=true);
 }
 
 module tray() {
@@ -99,9 +103,7 @@ module tray() {
 
 difference() {
     tray();
-    tray_d = TRAY_BOTTOM_D-TRAY_TOP_D/2-FOOT_R-FOOT_D;
-    tray_w = TRAY_W/2-FOOT_R-FOOT_W;
-    translate([tray_w, -tray_d, -tray_h/2+(FOOT_H+foot_h_tolerance)/2]) foot_recess();
-    translate([-tray_w, -tray_d, -tray_h/2+(FOOT_H+foot_h_tolerance)/2]) foot_recess();
+    foot_recess("left");
+    foot_recess("right");
 //    translate([-TRAY_W/2, 0,-tray_h]) cube([200,200,200]);
 }
