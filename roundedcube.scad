@@ -1,7 +1,6 @@
-// Higher definition curves
-$fs = 0.15;
-
 module roundedcube(size = [1, 1, 1], shift = [0, 0], center = false, radius = 0.5, apply_to = "all") {
+	// Higher definition curves
+	$fs = 0.15;
 	// Use shift parameter to change the size of the bottom left/bottom front side with respect to the top
 	// If single value, convert to [x, y, z] vector
 	size = (size[0] == undef) ? [size, size, size] : size;
