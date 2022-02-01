@@ -179,8 +179,8 @@ module case_top(board_width, board_height, board_radius) {
 
 // Rendering the modules
 
-//translate([-3, 4, 12.5]) color("lightblue") esp32(esp32_width, esp32_height, esp32_depth, esp32_pinheader_depth);
-//addon_board(addon_width, addon_height, addon_depth, edge_radius);
+translate([-3, 4, 12.5]) color("lightblue") esp32(esp32_width, esp32_height, esp32_depth, esp32_pinheader_depth);
+addon_board(addon_width, addon_height, addon_depth, edge_radius);
 //    translate([2350*mil, 0, -addon_depth]) cube([50,50,30]);
 //    translate([0, 0, -addon_depth]) cube([100*mil,50,30]);
 
