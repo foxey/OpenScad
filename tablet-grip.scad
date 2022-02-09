@@ -1,4 +1,4 @@
-$fn = 50;
+// $fn = 50;
 PROTRUSION = 0.1;  // additional size for clean substractions
 TOL = 1;  // tolerance between tablet and grip
 TABLET_X = 258.70;  // exact length (according to HUAWEI documentation)
@@ -296,23 +296,25 @@ module moving_arm(X, Y, Z, Z2, D){
 // D = diameter of the rounded edge
 // W = wall thickness under the arm
 module arm_grip(X, Y, Z, D, W) {
-    ARM_GRIP_X2 = Y/2;
+    ARM_GRIP_Y = 1.5*Y;
+    ARM_GRIP_X2 = (ARM_GRIP_Y-Y)/2;
     ARM_GRIP_X = X - ARM_GRIP_X2;
-    ARM_GRIP_Y = 2*Y;
     ARM_GRIP_Z = Z + W + M3NUT_Z + TOL;
     ARM_GRIP_SCREW_X = ARM_GRIP_X2;
-    translate([ARM_GRIP_X2, -Y/2, 0])
+    translate([ARM_GRIP_X2, -ARM_GRIP_Y/2, 0])
         union(){
             difference(){
-                translate([-ARM_GRIP_X2, -Y/2, 0]) rounded_cube_round_bottom(ARM_GRIP_X, ARM_GRIP_Y, ARM_GRIP_Z, D);
-                translate([0, -TOL/2, ARM_GRIP_Z-Z-TOL/2]) rounded_cube_round_bottom(X, Y+TOL, Z + TOL + PROTRUSION, D);
-                screw_hole_x = ARM_GRIP_X - ARM_GRIP_SCREW_X - ARM_GRIP_X2 + M3BOLT_D/2;
-                screw_hole_y = -Y/2+ARM_GRIP_Y/2;
+                translate([-ARM_GRIP_X2, 0, 0])
+                    rounded_cube_round_bottom(ARM_GRIP_X, ARM_GRIP_Y, ARM_GRIP_Z, D);
+                translate([0, -TOL/2 + (ARM_GRIP_Y - Y)/2, ARM_GRIP_Z-Z-TOL/2])
+                    rounded_cube_round_bottom(X, Y+TOL, Z + TOL + PROTRUSION, D);
+                screw_hole_x = ARM_GRIP_X - 2*ARM_GRIP_X2 - M3BOLT_D/2;
+                screw_hole_y = ARM_GRIP_Y/2;
                 translate([screw_hole_x, screw_hole_y, -PROTRUSION]) m3nut(M3NUT_Z + PROTRUSION, 90);
                 translate([screw_hole_x, screw_hole_y, -PROTRUSION]) backplate_screwhole(BACKPLATE_SCREW_D, ARM_GRIP_Z);
             }
             R=RIDGE;
-            translate([0, -TOL/2, ARM_GRIP_Z - Z + D/2 + TOL/4]) {
+            translate([0, -TOL/2 + (ARM_GRIP_Y - Y)/2, ARM_GRIP_Z - Z + D/2 + TOL/4]) {
                 ridge(ARM_GRIP_X - ARM_GRIP_X2, R);
                 translate([0, Y + TOL, 0])
                     rotate([90, 0, 0])
@@ -320,6 +322,16 @@ module arm_grip(X, Y, Z, D, W) {
             }
         }
 }
+
+
+// Module: outer_base - exterior shape for stiffness 
+module outer_base() {
+    difference() {
+        rounded_cube_centered(TABLET_X - diff, TABLET_Y - diff, OUTER_BASE_GRIP_Z, BACKPLATE_R);
+        translate([0, 0, -PROTRUSION]) rounded_cube_centered(TABLET_X - diff2, TABLET_Y - diff2, BASE_GRIP_Z + 2*PROTRUSION, BACKPLATE_R);
+    }
+}
+
 
 // Module: full_base - base backplate plus 3 arm grips
 module full_base() {
@@ -348,22 +360,23 @@ module full_base() {
 
         arm_shift_z = BASE_GRIP_Z - (ARM_Z + WALL_THICKNESS + M3NUT_Z + TOL);
 
+        arm_grip_factor = 1.5;
+
         translate([0, 0, BASE_GRIP_Z - OUTER_BASE_GRIP_Z])
         difference(){
-            rounded_cube_centered(TABLET_X - diff, TABLET_Y - diff, OUTER_BASE_GRIP_Z, BACKPLATE_R);
-            translate([0, 0, -PROTRUSION]) rounded_cube_centered(TABLET_X - diff2, TABLET_Y - diff2, BASE_GRIP_Z + 2*PROTRUSION, BACKPLATE_R);
+            outer_base();
             translate([arm1_shift_x, arm1_shift_y, -PROTRUSION])
                 rotate([0, 0, -45])
-                    translate([0, -ARM_Y, 0])
-                        rounded_cube(ARM_X, 2*ARM_Y, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
+                    translate([0, -arm_grip_factor*ARM_Y/2, 0])
+                        rounded_cube(ARM_X, arm_grip_factor*ARM_Y, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
             translate([arm2_shift_x, arm2_shift_y, -PROTRUSION])
                 rotate([0, 0, -135])
-                    translate([0, -ARM_Y, 0])
-                        rounded_cube(ARM_X, 2*ARM_Y, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
+                    translate([0, -arm_grip_factor*ARM_Y/2, 0])
+                        rounded_cube(ARM_X, arm_grip_factor*ARM_Y, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
             translate([arm3_shift_x, arm3_shift_y, -PROTRUSION])
                 rotate([0, 0, 90])
-                    translate([0, -ARM_Y, 0])
-                        rounded_cube(ARM_X, 2*ARM_Y, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
+                    translate([0, -arm_grip_factor*ARM_Y/2, 0])
+                        rounded_cube(ARM_X, arm_grip_factor*ARM_Y, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
         }
 
         translate([arm1_shift_x, arm1_shift_y, arm_shift_z])
