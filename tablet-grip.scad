@@ -1,4 +1,5 @@
-// $fn = 50;
+FN = 30;
+$fn = FN;
 PROTRUSION = 0.1;  // additional size for clean substractions
 TOL = 1;  // tolerance between tablet and grip
 TABLET_X = 258.70;  // exact length (according to HUAWEI documentation)
@@ -325,11 +326,44 @@ module arm_grip(X, Y, Z, D, W) {
 
 
 // Module: outer_base - exterior shape for stiffness 
-module outer_base() {
+module outer_base_orig() {
+    diff = 2*sqrt(50^2/2);
+    diff2 = 2*sqrt(50^2/2) + 20;
     difference() {
         rounded_cube_centered(TABLET_X - diff, TABLET_Y - diff, OUTER_BASE_GRIP_Z, BACKPLATE_R);
-        translate([0, 0, -PROTRUSION]) rounded_cube_centered(TABLET_X - diff2, TABLET_Y - diff2, BASE_GRIP_Z + 2*PROTRUSION, BACKPLATE_R);
+        translate([0, 0, -PROTRUSION])
+            rounded_cube_centered(TABLET_X - diff2, TABLET_Y - diff2, BASE_GRIP_Z + 2*PROTRUSION, (diff/diff2)*BACKPLATE_R);
     }
+}
+
+
+// Module: outer_base - exterior shape for stiffness 
+module outer_base() {
+    $fn=18;
+    diff = 2*sqrt(50^2/2);
+    diff2 = 2*sqrt(50^2/2) + 13;
+    translate([0, 0, ARM_D/2+.2])
+        minkowski() {
+            difference() {
+                $fn=FN;
+                rounded_cube_centered(TABLET_X - diff, TABLET_Y - diff, OUTER_BASE_GRIP_Z - ARM_D - PROTRUSION, BACKPLATE_R);
+                translate([0, 0, -PROTRUSION])
+                    rounded_cube_centered(TABLET_X - diff2, TABLET_Y - diff2, BASE_GRIP_Z + 2*PROTRUSION, (diff/diff2)*BACKPLATE_R);
+            }
+            sphere(d=ARM_D);
+        }
+}
+
+
+// Module: outer_base - exterior shape for stiffness 
+module outer_base_straight() {
+    diff = 2*sqrt(50^2/2);
+    diff2 = 2*sqrt(50^2/2) + 13;
+            difference() {
+                rounded_cube_centered(TABLET_X - diff, TABLET_Y - diff, OUTER_BASE_GRIP_Z, BACKPLATE_R);
+                translate([0, 0, -PROTRUSION])
+                    rounded_cube_centered(TABLET_X - diff2, TABLET_Y - diff2, BASE_GRIP_Z + 2*PROTRUSION, (diff/diff2)*BACKPLATE_R);
+        }
 }
 
 
@@ -428,7 +462,7 @@ WALL_THICKNESS = 2;
 RIDGE = 3;
 
 // #translate([-(TABLET_X-BACKPLATE_X)/2, -(TABLET_Y-BACKPLATE_Y)/2, BASE_GRIP_Z]) tablet();
-full_base();
+// full_base();
 //backplate_bottom(2);
 
 //translate([30, 0, WALL_THICKNESS + M3BOLTHEAD_Z]) fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
@@ -451,19 +485,27 @@ arm3_shift_y = BACKPLATE_Y; // - (TABLET_Y+TOL-diff)/2 + .9*diff;
 
 arm_shift_z = BASE_GRIP_Z - (ARM_Z + WALL_THICKNESS + M3NUT_Z + TOL);
 
-// Right bottom fixed arm in correct position with respect to full_base
-translate([arm1_shift_x, arm1_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
-    rotate([0, 0, -45])
-        translate([ARM_Y + 2, -ARM_Y/2, 0])
-            fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
-// Left bottom fixed arm in correct position with respect to full_base
-translate([arm2_shift_x, arm2_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
-    rotate([0, 0, -135])
-        translate([ARM_Y + 2, -ARM_Y/2, 0])
-            fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+// // Right bottom fixed arm in correct position with respect to full_base
+// translate([arm1_shift_x, arm1_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
+//     rotate([0, 0, -45])
+//         translate([ARM_Y + 2, -ARM_Y/2, 0])
+//             fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+// // Left bottom fixed arm in correct position with respect to full_base
+// translate([arm2_shift_x, arm2_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
+//     rotate([0, 0, -135])
+//         translate([ARM_Y + 2, -ARM_Y/2, 0])
+//             fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
 
-// Top moving arm in correct position with respect to full_base
-translate([arm3_shift_x, arm3_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
-    rotate([0, 0, 90])
-        translate([ARM_Y/2 + 10.5, -ARM_Y/2, 0])
-            moving_arm(FIXED_ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+// // Top moving arm in correct position with respect to full_base
+// translate([arm3_shift_x, arm3_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
+//     rotate([0, 0, 90])
+//         translate([ARM_Y/2 + 10.5, -ARM_Y/2, 0])
+//             moving_arm(FIXED_ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+
+intersection() {
+    translate([0, 0, ARM_Z + WALL_THICKNESS + M3NUT_Z - TOL])
+        rotate([180, 0, 0])
+            full_base();
+            translate([(BACKPLATE_X - 40)/2, -BACKPLATE_Y - FIXED_ARM_X + ARM_Y/4, -1])
+                cube([40, 25, 20]);
+        }
