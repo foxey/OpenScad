@@ -67,7 +67,7 @@ union() {
     rounded_cube(BACKPLATE_X + TOL, BACKPLATE_Y + TOL, Z, 2*BACKPLATE_R);
         translate([TOL/2, TOL/2]) {
         tolerance=-1;
-        bolthead_shift = BACKPLATE_Z + M3BOLT_Z - Z - M3BOLTHEAD_Z - PROTRUSION - .3;
+        bolthead_shift = BACKPLATE_Z + M3BOLT_Z - Z - M3BOLTHEAD_Z - PROTRUSION - 2.3;
         translate([tolerance/2 + BACKPLATE_R, tolerance + BACKPLATE_R, 0]) {
             backplate_screwhole(BACKPLATE_SCREW_D, BASE_GRIP_Z + PROTRUSION);
             translate([0, 0, bolthead_shift])
@@ -164,7 +164,7 @@ module rounded_cube_round_bottom(X, Y, Z, D) {
 // Y = width
 // Z = height
 // D = diameter of rounded edge
-module tablet_rest(X, Y, Z, D) {
+module rounded_cube_round_all(X, Y, Z, D) {
     hull(){
         shift=[D/2, D/2, 0];
         for (x = [0, X-D])
@@ -174,6 +174,28 @@ module tablet_rest(X, Y, Z, D) {
             }
     }
 }
+
+
+// Module: tablet_rest - cube with round bottom and edges
+// X = length
+// Y = width
+// Z = height
+// D = diameter of rounded edge
+module rounded_cube_round_all_centered(X, Y, Z, D) {
+    translate([(BACKPLATE_X - X)/2, (BACKPLATE_Y - Y)/2, 0])
+        rounded_cube_round_all(X, Y, Z, D);
+}
+
+
+// Module: tablet_rest - cube with round bottom and edges
+// X = length
+// Y = width
+// Z = height
+// D = diameter of rounded edge
+module tablet_rest(X, Y, Z, D) {
+    rounded_cube_round_all(X, Y, Z, D);
+}
+
 
 
 // Module: ridge - to fix sliding arm in base plate
@@ -421,16 +443,16 @@ module full_base() {
             outer_base();
             translate([arm1_shift_x, arm1_shift_y, -PROTRUSION])
                 rotate([0, 0, -45])
-                    translate([0, -arm_grip_factor*ARM_Y/2, 0])
-                        rounded_cube(ARM_X, arm_grip_factor*ARM_Y, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
+                    translate([0, -arm_grip_factor*ARM_Y/2 + 2, 0])
+                        rounded_cube(ARM_X, arm_grip_factor*ARM_Y - 4, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
             translate([arm2_shift_x, arm2_shift_y, -PROTRUSION])
                 rotate([0, 0, -135])
-                    translate([0, -arm_grip_factor*ARM_Y/2, 0])
-                        rounded_cube(ARM_X, arm_grip_factor*ARM_Y, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
+                    translate([0, -arm_grip_factor*ARM_Y/2 + 2, 0])
+                        rounded_cube(ARM_X, arm_grip_factor*ARM_Y - 4, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
             translate([arm3_shift_x, arm3_shift_y, -PROTRUSION])
                 rotate([0, 0, 90])
-                    translate([0, -arm_grip_factor*ARM_Y/2, 0])
-                        rounded_cube(ARM_X, arm_grip_factor*ARM_Y, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
+                    translate([0, -arm_grip_factor*ARM_Y/2 + 2, 0])
+                        rounded_cube(ARM_X, arm_grip_factor*ARM_Y - 4, BASE_GRIP_Z + 2*PROTRUSION, ARM_D);
         }
 
         // Top right tablet rest
@@ -519,21 +541,21 @@ arm3_shift_y = BACKPLATE_Y; // - (TABLET_Y+TOL-diff)/2 + .9*diff;
 arm_shift_z = BASE_GRIP_Z - (ARM_Z + WALL_THICKNESS + M3NUT_Z + TOL);
 
 // Right bottom fixed arm in correct position with respect to full_base
-translate([arm1_shift_x, arm1_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
-    rotate([0, 0, -45])
-        translate([ARM_Y + 2, -ARM_Y/2, 0])
-            fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
-// Left bottom fixed arm in correct position with respect to full_base
-translate([arm2_shift_x, arm2_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
-    rotate([0, 0, -135])
-        translate([ARM_Y + 2, -ARM_Y/2, 0])
-            fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+// translate([arm1_shift_x, arm1_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
+//     rotate([0, 0, -45])
+//         translate([ARM_Y + 2, -ARM_Y/2, 0])
+//             fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+// // Left bottom fixed arm in correct position with respect to full_base
+// translate([arm2_shift_x, arm2_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
+//     rotate([0, 0, -135])
+//         translate([ARM_Y + 2, -ARM_Y/2, 0])
+//             fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
 
-// Top moving arm in correct position with respect to full_base
-translate([arm3_shift_x, arm3_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
-    rotate([0, 0, 90])
-        translate([ARM_Y/2 + 10.5, -ARM_Y/2, 0])
-            moving_arm(FIXED_ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+// // Top moving arm in correct position with respect to full_base
+// translate([arm3_shift_x, arm3_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
+//     rotate([0, 0, 90])
+//         translate([ARM_Y/2 + 10.5, -ARM_Y/2, 0])
+//             moving_arm(FIXED_ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
 
 // // Arms only
 // fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
