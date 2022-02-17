@@ -492,12 +492,12 @@ module full_base() {
             rotate([0, 0, 90]) {
                 hull() {
                     translate([-ARM_D + POLE_Y/2 + (POLE_D2-POLE_D1)/2 , -POLE_D1/2, WALL_THICKNESS + M3NUT_Z - 3/2*TOL - arm_shift_z + PROTRUSION + POLE_Y])
-                        rounded_cube(POLE_D1, POLE_D1, PROTRUSION, ARM_D);
+                        rounded_cube(POLE_D1 - ARM_D, POLE_D1, PROTRUSION, ARM_D);
                     translate([-ARM_D + POLE_Y/2 , -POLE_D2/2, ARM_Z + WALL_THICKNESS + M3NUT_Z + TOL])
-                        rounded_cube(POLE_D2, POLE_D2, PROTRUSION, ARM_D);
+                        rounded_cube(POLE_D2 - POLE_Y/2 - ARM_D, POLE_D2, PROTRUSION, ARM_D);
                 }
                 translate([-ARM_D + POLE_Y/2  + (POLE_D2-POLE_D1)/2, -POLE_D1/2, WALL_THICKNESS + M3NUT_Z - 3/2*TOL - arm_shift_z + 2*PROTRUSION])
-                    rounded_cube(POLE_D1, POLE_D1, POLE_Y, ARM_D);
+                    rounded_cube(POLE_D1 - ARM_D, POLE_D1, POLE_Y, ARM_D);
 
             }
     }
