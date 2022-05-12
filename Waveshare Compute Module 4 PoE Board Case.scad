@@ -257,16 +257,24 @@ module border(r, x, y, z, right=false) {
 
 
 // Module: ethernet - cutout for ethernet port
-module ethernet() {
-    z = 13.4 + 2*TOLERANCE + Z_BOARD;
-    translate([-2-1, 0, -z]) cube([21.2+2, 16+TOLERANCE, z]);
+module ethernet(lid=false) {
+    x = lid ? 1 : 21.2+2;
+    x_offset = lid ? 1 : -2-1;
+    y = lid ? 16-TOLERANCE : 16+TOLERANCE;
+    y_offset = lid ? TOLERANCE : 0;
+    z = lid ? Z_BOARD : 13.4 + 2*TOLERANCE + Z_BOARD;
+    translate([x_offset, y_offset, -z]) cube([x, y, z]);
 }
 
 
 // Module: serial - cutout for serial ports
-module serial() {
-    z = 7 + 2*TOLERANCE + Z_BOARD;
-    translate([-2-1, 0, -z]) cube([9+2, 31+TOLERANCE, z]);
+module serial(lid=false) {
+    x = lid ? 1 : 9+2;
+    x_offset = lid ? 1 : -2-1;
+    y = lid ? 31 - TOLERANCE : 31+TOLERANCE;
+    y_offset = lid ? TOLERANCE : 0;
+    z = lid ? Z_BOARD : 7 + 2*TOLERANCE + Z_BOARD;
+    translate([x_offset, y_offset, -z]) cube([x, y, z]);
 }
 
 
@@ -282,11 +290,13 @@ module leds() {
 
 
 // Module: usb_c - cutout for USB C port
-module usb_c() {
-    x = 7.5 + 2;
-    y = 9 + TOLERANCE;
-    z = 3.5 + 2*TOLERANCE+Z_BOARD;
-    translate([-2-1, 0, -z]) cube([x, y, z]);
+module usb_c(lid=false) {
+    x = lid ? 1: 7.5 + 2;
+    x_offset = lid ? 1 : -2-1;
+    y = lid ? 9 - TOLERANCE : 9 + TOLERANCE;
+    y_offset = lid ? TOLERANCE : 0;
+    z = lid ? Z_BOARD : 3.5 + 2*TOLERANCE+Z_BOARD;
+    translate([x_offset, y_offset, -z]) cube([x, y, z]);
 }
 
 
@@ -444,6 +454,14 @@ module full_lid() {
             translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-61.6, z_offset]) usb_border(port_border);
             translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-88, z_offset]) usb_border(port_border);
         }
+
+        // Lid extentions to cover port cutouts in front of the PCB
+        // Left ports
+        translate([-R_CORNER-T_CASE, -R_CORNER+7, z_offset]) ethernet(lid=true);
+        translate([-R_CORNER-T_CASE, -R_CORNER+35.6, z_offset]) serial(lid=true);
+        translate([-R_CORNER-T_CASE, -R_CORNER+91.75, z_offset]) usb_c(lid=true);
+
+        // Right ports
         translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-8.5, z_offset]) hdmi(lid=true);
         translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-33, z_offset]) hdmi(lid=true);
         translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-61.6, z_offset]) usb(lid=true);
@@ -451,7 +469,7 @@ module full_lid() {
     }
 }
 
-difference() {
+*difference() {
     full_case();
 //    translate([-10, -10, -10]) cube([20+X_BOARD, 20+ Y_BOARD, 35]);
 }
