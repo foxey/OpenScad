@@ -15,8 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-FN = 30;
-$fn = FN;
+$fn = 72;
 
 Z_LAYER = .15;
 
@@ -267,6 +266,18 @@ module ethernet(lid=false) {
 }
 
 
+// Module: ethernet_mount - cutout in corner pillar for ethernet solder mount
+module ethernet_mount() {
+    x = 7.5 + 2;
+    x_offset = T_CASE;
+    y = 5;
+    y_offset = 0;
+    z = 2 + TOLERANCE;
+    z_offset = 2 - 3*TOLERANCE - Z_BOARD;
+    translate([x_offset, y_offset, z_offset]) cube([x, y, z]);
+}
+
+
 // Module: serial - cutout for serial ports
 module serial(lid=false) {
     x = lid ? 1 : 9+2;
@@ -297,6 +308,18 @@ module usb_c(lid=false) {
     y_offset = lid ? TOLERANCE : 0;
     z = lid ? Z_BOARD : 3.5 + 2*TOLERANCE+Z_BOARD;
     translate([x_offset, y_offset, -z]) cube([x, y, z]);
+}
+
+
+// Module: sd_card_slot - cutout for SD Card Reader
+module sd_card_slot() {
+    x = 7.5 + 2;
+    x_offset = -2-1;
+    y = 14 + TOLERANCE;
+    y_offset = 0;
+    z = 2 + TOLERANCE;
+    z_offset = 2 - 3*TOLERANCE - Z_BOARD;
+    translate([x_offset, y_offset, z_offset]) cube([x, y, z]);
 }
 
 
@@ -363,6 +386,11 @@ module usb_border(r) {
 }
 
 
+// Module: ssd_led - See-through window for SSD activity LED
+module ssd_led(d) {
+    cylinder(d=d, h=T_CASE);
+}
+
 // Module: ventilation_slit - single ventilation slit
 module ventilation_slit(d) {
     rotate([0, 0, 45]) cube([d, d, 2*T_CASE]);
@@ -414,6 +442,10 @@ module full_case() {
     translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-88, z_offset]) usb();
     translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-88, z_offset]) usb_border(port_border);
 
+// SSD activity LED window
+    translate([-R_CORNER+20, -R_CORNER+30, -R_CORNER-T_CASE+Z_LAYER ])
+        ssd_led(5);
+
 // Ventilation grates (side panels)
     translate([(X_HOLE+TOLERANCE-x_vent)/2, -T_CASE, (Z_CASE-z_vent)/2])
         rotate([0, 0, -90])
@@ -426,6 +458,42 @@ module full_case() {
     translate([50+TOLERANCE+x_top_vent, Y_HOLE+TOLERANCE-y_top_vent-3.5, -R_CORNER-T_CASE])
     rotate([0, -90, 0])
         ventilation_grate(top_vent_d, top_vent_rows, top_vent_cols);
+    }
+}
+
+
+// Module: wall_mount_hole - screw hole for wall mount
+module wall_mount_hole() {
+    translate([0, 0, R_CORNER+T_CASE/2]) {
+        cylinder(d=7, h=2*T_CASE);
+        hull() {
+            translate([0, 0, T_CASE/4]) cylinder(d=7, h=T_CASE);
+            translate([0, 3.5, -T_CASE/2]) cylinder(d=7, h=T_CASE);
+        }
+        hull() {
+            cylinder(d=7, h=T_CASE);
+            translate([0, 3.5+5, 0]) cylinder(d=7, h=T_CASE);
+        }
+        hull() {
+            cylinder(d=3, h=2*T_CASE);
+            translate([0, 3.5+5, 0]) cylinder(d=3, h=2*T_CASE);
+        }
+    }
+}
+
+// Module: wall_mount_hole_cover - internal cover for screw hole to protect backside of the PCB
+module wall_mount_hole_cover() {
+    translate([0, 0, R_CORNER-T_CASE+1]) {
+        difference() {
+            hull() {
+                cylinder(d1=9, d2=12, h=3);
+                translate([0, 3.5+5, 0]) cylinder(d1=9, d2=12, h=3);
+            }
+            translate([0, 0, -.1]) hull() {
+                translate([0, 0, 1.1]) cylinder(d1=5.5, d2=7, h=2.1);
+                translate([0, 3.5+5, 1.1]) cylinder(d1=5.5, d2=7, h=2.1);
+            }
+        }
     }
 }
 
@@ -448,12 +516,20 @@ module full_lid() {
                         }
                         bolt_holes();
                     }
+            translate([-R_CORNER-T_CASE, 3.5, z_offset]) ethernet_mount();
+            translate([-R_CORNER-T_CASE, -R_CORNER+69, z_offset]) sd_card_slot();
             translate([-R_CORNER-T_CASE, -R_CORNER+91.75, z_offset]) usb_c_border(port_border);
             translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-8.5, z_offset]) hdmi_border(port_border);
             translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-33, z_offset]) hdmi_border(port_border);
             translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-61.6, z_offset]) usb_border(port_border);
             translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-88, z_offset]) usb_border(port_border);
+            translate([X_BOARD/3, 2*Y_BOARD/3, z_offset]) wall_mount_hole();
+            translate([2*X_BOARD/3, 2*Y_BOARD/3, z_offset]) wall_mount_hole();
         }
+
+        // Cover to protect backside PCB
+        translate([X_BOARD/3, 2*Y_BOARD/3, z_offset]) wall_mount_hole_cover();
+        translate([2*X_BOARD/3, 2*Y_BOARD/3, z_offset]) wall_mount_hole_cover();
 
         // Lid extentions to cover port cutouts in front of the PCB
         // Left ports
@@ -469,10 +545,14 @@ module full_lid() {
     }
 }
 
-*difference() {
+difference() {
     full_case();
 //    translate([-10, -10, -10]) cube([20+X_BOARD, 20+ Y_BOARD, 35]);
 }
 
-translate([0, 0, 1*(Z_CASE + 2*T_CASE)])
-    full_lid();
+// translate([0, 0, 1*(Z_CASE + 2*T_CASE)])
+//     full_lid();
+
+translate([1.5*X_BOARD, Y_HOLE, T_CASE])
+    rotate([-180, 0, 0])
+        full_lid();
