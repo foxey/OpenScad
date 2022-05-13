@@ -39,18 +39,21 @@ M3BOLTHEAD_D= 5.5;
 
 // Dimensions of the ventilation grate in the side panels
 vent_d = 3;
-vent_rows = 3;
-vent_cols = 10;
-x_vent = (sqrt(2)+(vent_cols)*2)*vent_d;
-z_vent = (sqrt(2)+vent_rows*2)*vent_d;
+vent_multiplier = 2.5;
+vent_rows = 2;
+vent_cols = 8;
+x_vent = (sqrt(2)+(vent_cols)*vent_multiplier)*vent_d;
+z_vent = (sqrt(2)+vent_rows*vent_multiplier)*vent_d;
+echo("SIDE VENT x=", x_vent," z=", z_vent);
 
 // Dimensions of the ventilation grate in the top
 top_vent_d = 3;
-top_vent_rows = 6;
-top_vent_cols = 9;
-x_top_vent = (sqrt(2)+top_vent_rows*2)*top_vent_d;
-y_top_vent = (sqrt(2)+(top_vent_cols)*2)*top_vent_d;
-echo(" TOP VENT x=", x_top_vent," y=", y_top_vent);
+top_vent_multiplier = 2.5;
+top_vent_rows = 5;
+top_vent_cols = 6;
+x_top_vent = (sqrt(2)+top_vent_rows*top_vent_multiplier)*top_vent_d;
+y_top_vent = (sqrt(2)+(top_vent_cols)*top_vent_multiplier)*top_vent_d;
+echo("TOP VENT x=", x_top_vent," y=", y_top_vent);
 
 // Width of the recessed border around the USB and HDMI ports
 port_border = 2;
@@ -398,18 +401,22 @@ module ventilation_slit(d) {
 
 
 // Module: ventilation_grate - array of slits for case side
-module ventilation_grate(d, rows, cols) {
-    translate([0, 0, (.5*sqrt(2)+2*rows)*d])
+// d = dimension of the ventilation hole (square)
+// m = multiplier for the horizontal and vertical distance
+// rows = number of vertical repetitions in the grate
+// columns = number of horizontal repetitions in the grate
+module ventilation_grate(d, m, rows, cols) {
+    translate([0, 0, (.5*sqrt(2)+m*rows)*d])
         rotate([0, 90, 0])
             for (row = [0:rows]) {
                 for (col = [0:cols-1]) {
-                    translate([2*row*d, 2*d*col, 0])
+                    translate([m*row*d, m*d*col, 0])
                         ventilation_slit(d);
                     if (row<rows)
-                        translate([(1+2*row)*d, (1+2*col)*d, 0])
+                        translate([m*(.5+row)*d, m*(.5+col)*d, 0])
                             ventilation_slit(d);
                 }
-                translate([2*row*d, 2*d*cols, 0])
+                translate([m*row*d, m*d*cols, 0])
                     ventilation_slit(d);
             }
 }
@@ -449,15 +456,15 @@ module full_case() {
 // Ventilation grates (side panels)
     translate([(X_HOLE+TOLERANCE-x_vent)/2, -T_CASE, (Z_CASE-z_vent)/2])
         rotate([0, 0, -90])
-            ventilation_grate(vent_d, vent_rows, vent_cols);
+            ventilation_grate(vent_d, vent_multiplier, vent_rows, vent_cols);
     translate([(X_HOLE+TOLERANCE-x_vent)/2, Y_BOARD+TOLERANCE, (Z_CASE-z_vent)/2])
         rotate([0, 0, -90])
-            ventilation_grate(vent_d, vent_rows, vent_cols);
+            ventilation_grate(vent_d, vent_multiplier, vent_rows, vent_cols);
 
 // Ventilation grate (top)
-    translate([50+TOLERANCE+x_top_vent, Y_HOLE+TOLERANCE-y_top_vent-3.5, -R_CORNER-T_CASE])
+    translate([(X_HOLE+TOLERANCE+x_vent)/2, Y_HOLE+TOLERANCE-y_top_vent-(5+(55-y_top_vent)/2), -R_CORNER-T_CASE])
     rotate([0, -90, 0])
-        ventilation_grate(top_vent_d, top_vent_rows, top_vent_cols);
+        ventilation_grate(top_vent_d, top_vent_multiplier, top_vent_rows, top_vent_cols);
     }
 }
 
