@@ -24,6 +24,7 @@ Y_BOARD = 108.8; // Width of the board
 Z_BOARD = 1.5; // Height of the board (PCB only)
 Z_CASE = 47-3; // Height of the case (minus the top and bottom parts)
 T_CASE = 2; // Wall thickness of the case
+SHIFT_FACTOR = .5; // fraction of corner radius for recess for top and bottom
 X_HOLE = 118.5; // Length between mount holes
 Y_HOLE = 102.8; // Width between mount holes 
 
@@ -89,16 +90,22 @@ module case() {
     }
 }
 
+module case_corner(r, shift) {
+   hull() {
+        translate([shift, shift, -r]) cylinder(r=r, h= .1);
+        translate([0, 0, -.1]) cylinder(r=r, h= .1);
+   }
+}
 
 // Module: base_case_top - Solid top with rounded edges and corners
 // thickness = wall thickness
-module base_case_top(thickness) {
+module base_case_top(thickness, shift_factor) {
     hull() {
         radius = R_CORNER + thickness;
-        translate([0, 0, 0]) sphere(r=radius);
-        translate([X_HOLE, 0, 0]) sphere(r=radius);
-        translate([0, Y_HOLE, 0]) sphere(r=radius);
-        translate([X_HOLE, Y_HOLE, 0]) sphere(r=radius);
+        translate([0, 0, 0]) rotate([0, 0, 0]) case_corner(radius, shift_factor*radius);
+        translate([X_HOLE, 0, 0]) rotate([0, 0, 90]) case_corner(radius, shift_factor*radius);
+        translate([0, Y_HOLE, 0]) rotate([0, 0, -90]) case_corner(radius, shift_factor*radius);
+        translate([X_HOLE, Y_HOLE, 0]) rotate([0, 0, -180]) case_corner(radius, shift_factor*radius);
     }
 }
 
@@ -106,9 +113,8 @@ module base_case_top(thickness) {
 // Module: case_top - Hollow case top
 module case_top(){
     difference(){
-        base_case_top(T_CASE);
-        translate([0, 0, 0]) base_case_top(0*T_CASE/2);
-        translate([-X_BOARD/2, -Y_BOARD/2, 0]) cube([2*X_BOARD, 2*Y_BOARD, 2*(R_CORNER+T_CASE)]);
+        base_case_top(T_CASE, SHIFT_FACTOR);
+        base_case_top(0*T_CASE/2, SHIFT_FACTOR);
     }
 }
 
@@ -121,8 +127,8 @@ module nut_stand(){
                 cylinder(r=R_CORNER+T_CASE, h=T_CASE+M3NUT_Z*2);
                 translate([-R_CORNER-T_CASE/2, 0, H_CORNER-.1]) cylinder(r=T_CASE/2, h=.1);
             }
-            translate([0, 0, T_CASE]) m3nut(M3NUT_Z);
-            translate([0, 0, T_CASE+M3NUT_Z]) {
+            translate([0, 0, T_CASE/2]) m3nut(M3NUT_Z);
+            translate([0, 0, T_CASE/2+M3NUT_Z]) {
                 hull(){
                     m3nut(M3NUT_Z);
                     translate([2*(R_CORNER+T_CASE), 0, 0]) m3nut(M3NUT_Z);
@@ -143,71 +149,59 @@ module nut_stands(){
 }
 
 
-// Module: quartre_sphere
-// r = radius
-module eights_sphere(r) {
-    difference() {
-        sphere(r=r);
-        cylinder(r=r, h=r);
-        translate([0, -r, -r]) cube([r, 2*r, r+TOLERANCE]);
-        translate([-r, -r, -r]) cube([2*r, r, r+TOLERANCE]);
-    }
-}
-
-
-// Module: eigth_cylinder
+// Module: side_cut - shave of side of bolt_stand
 // r = radius
 // h = height
-module eights_cylinder(r, h) {
+// shift = distance between top and bottom
+module side_cut(r, h, shift) {
+    translate([-2*r, -2*r, 0])
+        hull() {
+            case_corner(r, shift);
+            translate([0, 2*h, 0]) case_corner(r, shift);
+        }
+}
+
+
+module rotated_side_cut(r, h, shift) {
+    translate([0, 0, 0])
+        rotate([0, 0, 90]) 
+            side_cut(r, h, shift);
+}
+
+
+module cylindrical_cut(r, shift) {
     difference() {
-        cylinder(r=r, h=h);
-        translate([0, -r, -TOLERANCE]) cube([r, 2*r, h+2*TOLERANCE]);
-        translate([-r, -r, -TOLERANCE]) cube([2*r, r, h+2*TOLERANCE]);
+        translate([-r, -r, -r]) cube([2*r, 2*r, r]);
+        case_corner(r, shift);
     }
 }
 
-
-module spherical_cut(r) {
-    difference() {
-        translate([0, 0, -r]) eights_cylinder(r, r);
-        eights_sphere(r);
-    }
-}
-
-
-module cylindrical_cut(r, h) {
-    difference() {
-        translate([-r, -r, -r]) cube([r, h, r]);
-        translate([0, r, 0]) rotate([90, 0, 0]) cylinder(r=r,h=h);
-    }
-}
-
-
-module rotated_cylindrical_cut(r, h) {
-    translate([0, -h, 0])
-        rotate([0, -90, 90]) 
-            cylindrical_cut(r, h);
-}
 
 // Module: bolt_stand: cylinder with hole for M3 bolt
 module bolt_stand() {
     r = R_CORNER + T_CASE;
+    shift = SHIFT_FACTOR*r;
     difference(){
         translate([0, 0, -r]) cylinder(r=r, h=r+T_CASE);
-        spherical_cut(r);
-        cylindrical_cut(r, 2*r);
-        translate([0, 2*r, 0]) rotated_cylindrical_cut(r, 2*r);
+        cylindrical_cut(r, shift);
+        side_cut(r, 2*r, shift);
+        rotated_side_cut(r, 2*r, shift);
     }
 }
 
+*color("purple") side_cut(R_CORNER+T_CASE,2*(R_CORNER+T_CASE),SHIFT_FACTOR*(R_CORNER+T_CASE));
+*color("blue") rotated_side_cut(R_CORNER+T_CASE,2*(R_CORNER+T_CASE),SHIFT_FACTOR*(R_CORNER+T_CASE));
+*cylindrical_cut(R_CORNER+T_CASE, SHIFT_FACTOR*(R_CORNER+T_CASE));
+*color("blue") bolt_stand();
+*case_top();
 
 // Module: bolt_stands - 4 bolt_stand-s positioned in each corner of the case
 module bolt_stands(){
     z_offset = 0;
-    translate([0, 0, z_offset]) rotate([0, 0, 90]) bolt_stand();
-    translate([X_HOLE, 0, z_offset]) rotate([0, 0, 180]) bolt_stand();
-    translate([0, Y_HOLE, z_offset]) rotate([0, 0, 0]) bolt_stand();
-    translate([X_HOLE, Y_HOLE, z_offset]) rotate([0, 0, 270]) bolt_stand();
+    translate([0, 0, z_offset]) rotate([0, 0, 0]) bolt_stand();
+    translate([X_HOLE, 0, z_offset]) rotate([0, 0, 90]) bolt_stand();
+    translate([0, Y_HOLE, z_offset]) rotate([0, 0, 270]) bolt_stand();
+    translate([X_HOLE, Y_HOLE, z_offset]) rotate([0, 0, 180]) bolt_stand();
 }
 
 
@@ -336,12 +330,12 @@ module usb_c_border(r) {
 }
 
 
-// Module: power_resistor: cutout for power resistor next to usb_c port
-module power_resistor() {
+// Module: power_capacitor: cutout for power resistor next to usb_c port
+module power_capacitor() {
     x = 5;
     y = 4;
-    z = 1.5+Z_BOARD;
-    translate([4, 0, -z]) cube([x, y, z]);
+    z = 1.25+Z_BOARD;
+    translate([7, 0, -z]) cube([x, y, z]);
 }
 
 
@@ -437,7 +431,7 @@ module full_case() {
     translate([-R_CORNER-T_CASE, -R_CORNER+85.5, z_offset]) leds();
     translate([-R_CORNER-T_CASE, -R_CORNER+91.75, z_offset]) usb_c();
     translate([-R_CORNER-T_CASE, -R_CORNER+91.75, z_offset]) usb_c_border(port_border);
-    translate([-R_CORNER-T_CASE, -R_CORNER+100, z_offset]) power_resistor();
+    translate([-R_CORNER-T_CASE, -R_CORNER+100, z_offset]) power_capacitor();
 
 // Right ports
     translate([-R_CORNER+2*TOLERANCE+X_BOARD+T_CASE, -R_CORNER+TOLERANCE+Y_BOARD-8.5, z_offset]) hdmi();
