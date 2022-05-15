@@ -210,7 +210,7 @@ module bolt_hole() {
     r = R_CORNER + T_CASE;
     union() {
         translate([0, 0, -r]) cylinder(d=M3BOLT_D, h=r+T_CASE);
-        translate([0, 0, -r]) cylinder(d=M3BOLTHEAD_D, h=M3BOLTHEAD_Z);
+        translate([0, 0, -r]) cylinder(d=M3BOLTHEAD_D, h=r+T_CASE-1);
     }
 }
 
