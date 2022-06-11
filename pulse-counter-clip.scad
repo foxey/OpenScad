@@ -1,11 +1,11 @@
 $fn=64;
-CLIP_HEIGHT=3;
+CLIP_HEIGHT=2;
 CLIP_NOTCH_WIDTH=10;
 BASE_HEIGHT=19+2*CLIP_HEIGHT;
-BASE_WIDTH=44;
-BASE_DEPTH=10;
+BASE_WIDTH=32;
+BASE_DEPTH=2;
 LED_X=7;
-LED_RADIUS=6.5/2;
+LED_RADIUS=5/2;
 
 clip_width=CLIP_NOTCH_WIDTH+2*CLIP_HEIGHT;
 
@@ -16,8 +16,8 @@ module base(){
 
 module cutout(){
     cutout_width=BASE_WIDTH-2*LED_X-CLIP_HEIGHT;
-    translate([BASE_WIDTH-cutout_width-CLIP_HEIGHT,CLIP_HEIGHT,-1])
-    cube([cutout_width,BASE_HEIGHT-CLIP_HEIGHT*2,BASE_DEPTH+2]);
+    translate([BASE_WIDTH-cutout_width-CLIP_HEIGHT,2*CLIP_HEIGHT,-1])
+    cube([cutout_width,BASE_HEIGHT-CLIP_HEIGHT*4,BASE_DEPTH+2]);
 }
 
 module cutout_small_top(){
@@ -37,8 +37,7 @@ module cutout_small_bottom(){
 
 module led(){
     translate([LED_X,(BASE_HEIGHT)/2-1.25,0]){
-        translate([0,0,1]) cylinder(r=LED_RADIUS,h=BASE_DEPTH);
-        translate([0,0,-1]) cylinder(d=3.2,h=3);
+        translate([0,0,-.1]) cylinder(r=LED_RADIUS,h=BASE_DEPTH+2);
     }
 }
 

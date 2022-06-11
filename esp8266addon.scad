@@ -21,20 +21,26 @@ esp8266_depth = 1.5;
 esp8266_pinheader_depth = 2.5;
 
 // RJ12 connector dimensions
-rj12_width=15;
-rj12_height=13;
-rj12_depth=15;
+rj12_width = 15;
+rj12_height = 13;
+rj12_depth = 15;
 
 // Jack connector dimensions
-jack_width_full=16;
-jack_diameter=6.5;
-jack_width=11.5;
-jack_diameter_full=9;
-jack_depth=1;
+jack_width_full = 16;
+jack_diameter = 6.5;
+jack_width = 11.5;
+jack_diameter_full = 9;
+jack_depth = 1;
+
+// Pulse repeater LED dimensions
+prl_height = 7;
+prl_thickness = 1;
+prl_inner_diameter = 5;
+
 
 // Tiewrap cutout dimensions
-tiewrap_width=11;
-tiewrap_height=.5;
+tiewrap_width = 11;
+tiewrap_height = .5;
 
 module esp8266(width, height, depth, pinheader_depth) {
     difference() {
@@ -137,10 +143,19 @@ module case_bottom(board_width, board_height, board_radius) {
 
 module usb_connector(board_height, enlargement) {
     // edge cutout for micro USB connector
-    usb_height=11;
-    usb_depth=8;
+    usb_height = 11;
+    usb_depth = 8;
     translate([-1, (board_height+enlargement-usb_height)/2, -.5]) cube([usb_depth, usb_height, 7]);
 }
+
+
+module pulse_repeater(height, inner_diameter, thickness) {
+    difference() {
+        cylinder(h=height, d=inner_diameter+2*thickness);
+        translate([0, 0, -.1]) cylinder(h=height+.2, d=inner_diameter);
+    }
+}
+
 
 module case_top(board_width, board_height, board_radius) {
     enlargement=5;
@@ -169,6 +184,12 @@ module case_top(board_width, board_height, board_radius) {
             
             //RJ12 connector opening
             translate([0,0,-rj12_depth+.25]) rj12_connector(board_width, board_height, enlargement, depth);
+
+            // Pulse repeater LED opening
+            translate([board_width+2*depth-prl_inner_diameter/2-2*prl_thickness-7, 1+(prl_inner_diameter/2+2*prl_thickness)+depth+(board_height-rj12_height), 0])
+                cylinder(d=prl_inner_diameter , h=prl_height+2*depth);
+
+
             //tiewrap cutout
             translate([(board_width-tiewrap_width)/2,-tiewrap_height,-1]) cube([tiewrap_width,tiewrap_height*2,20]);
             translate([(board_width-tiewrap_width)/2,board_height+enlargement-tiewrap_height,-1]) cube([tiewrap_width,tiewrap_height*2,20]);
@@ -178,6 +199,10 @@ module case_top(board_width, board_height, board_radius) {
         translate([3+3+6+2, (board_height+enlargement)/2, 3]) cylinder(r=1.5, h=4);
         translate([47, 7.5, 3]) cylinder(r=1.5, h=5.5);
         translate([47, board_height+enlargement-7.5, 3]) cylinder(r=1.5, h=5.5);
+
+        // mount for pulse repeater LED
+        translate([board_width+2*depth-prl_inner_diameter/2-2*prl_thickness-7, 1+(prl_inner_diameter/2+2*prl_thickness)+depth+(board_height-rj12_height), 0])
+            pulse_repeater(prl_height, prl_inner_diameter, prl_thickness);
     }
 
     difference() {
@@ -218,6 +243,8 @@ module case_top(board_width, board_height, board_radius) {
 //addon_board(addon_width, addon_height, addon_depth, edge_radius);
 
 translate([-2.5, -2.5, -3.5]) color("lightgreen") case_bottom(addon_width, addon_height, edge_radius);
-translate([-2.5, -12.5, 5.5]) color("lightgreen") rotate([180, 0, 0]) case_top(addon_width, addon_height, edge_radius);
+translate([-2.5, -12.5, 5.5]) color("lightgreen")
+    rotate([180, 0, 0])
+        case_top(addon_width, addon_height, edge_radius);
 
 //translate([-2.5, -2.5, 11.5+0]) color("lightgreen") case_top(addon_width, addon_height, edge_radius);
