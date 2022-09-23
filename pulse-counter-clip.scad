@@ -219,6 +219,15 @@ module pulse_counter() {
     }
 }
 
+module pulse_counter_clip_base(delta_x) {
+    union() {
+        cube([PC_WIDTH-2*delta_x, PCB_HEIGHT-2*depth_tolerance, WALL_THICKNESS]);
+        translate([0, WALL_THICKNESS, 0])
+            cube([PC_WIDTH-2*delta_x, WALL_THICKNESS, 3*WALL_THICKNESS]);
+        translate([0, PCB_HEIGHT-2*depth_tolerance - 2*WALL_THICKNESS, 0])
+            cube([PC_WIDTH-2*delta_x, WALL_THICKNESS, 3*WALL_THICKNESS]);
+    }
+}
 
 module pulse_counter_lid() {
     delta_x = WALL_THICKNESS + depth_tolerance;
@@ -230,7 +239,7 @@ module pulse_counter_lid() {
     potmeter_pins_height = 5;
     translate([delta_x, delta_y, 0])
     difference() {
-        cube([PC_WIDTH-2*delta_x, PCB_HEIGHT-2*depth_tolerance, WALL_THICKNESS]);
+        pulse_counter_clip_base(delta_x);
         translate([LED_X-delta_x-led_pins_width/2, (PC_HEIGHT-2*LED_RADIUS)/2-delta_y, 0])
             #cube([led_pins_width, 2*LED_RADIUS, 1]);
         translate([x_potmeter+LED_X-delta_x-potmeter_pins_width/2, y_potmeter-potmeter_pins_height/2-delta_y, 0])
