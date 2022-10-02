@@ -270,22 +270,22 @@ module case_top(board_width, board_height, case_depth, board_radius) {
 // Rendering the modules
 
 module full_assembly() {
-    translate([jst_connector, 4, 12.5]) color("lightblue")
-        lolin32(lolin32_width, lolin32_height, lolin32_depth, lolin32_pinheader_depth);
-    translate([jst_connector + 10 - 150*mil, 0, 0])
-        addon_board(addon_width, addon_height, addon_depth, edge_radius);
-    translate([jst_connector + 10 - 150*mil + 2000*mil - 1.25,
-        (addon_height - sensor_height)/2 - 1, 10]) //color("lightblue")
-        sensor(sensor_width, sensor_height);
-    translate([1, addon_height + .5, -1])
-        battery();
+    // translate([jst_connector, 4, 12.5]) color("lightblue")
+    //     lolin32(lolin32_width, lolin32_height, lolin32_depth, lolin32_pinheader_depth);
+    // translate([jst_connector + 10 - 150*mil, 0, 0])
+    //     addon_board(addon_width, addon_height, addon_depth, edge_radius);
+    // translate([jst_connector + 10 - 150*mil + 2000*mil - 1.25,
+    //     (addon_height - sensor_height)/2 - 1, 10]) //color("lightblue")
+    //     sensor(sensor_width, sensor_height);
+    // translate([1, addon_height + .5, -1])
+    //     battery();
 
     translate([-2.5, -2.5, -3.5]) color("lightgreen") case_bottom(case_width, case_height, case_bottom_depth, edge_radius);
     translate([-2.5, -12.5, 10.5 - 3.5]) color("lightgreen")
         rotate([180, 0, 0])
             case_top(case_width, case_height, case_top_depth, edge_radius);
-    translate([-2.5, -2.5, 11.5 + 0]) color("lightgreen")
-        case_top(case_width, case_height, case_top_depth, edge_radius);
+    // translate([-2.5, -2.5, 11.5 + 0]) color("lightgreen")
+    //     case_top(case_width, case_height, case_top_depth, edge_radius);
 }
 
 difference(){
@@ -295,7 +295,6 @@ difference(){
     //translate([-5, 45, -10]) cube([10 + case_width, 50, 50]);
 }
 
-    color("purple") translate([case_width-15, 0, 1.5]) cube([5, 11, case_bottom_depth-5]);
-    // color("purple") translate([case_width-15, 10, 1.5]) cube([5, 5, case_bottom_depth-5]);
-//    color("violet") translate([case_width-15, 10, 1.5+case_bottom_depth-5]) cube([5, 5, 3]);
-//   color("purple") translate([0, -20, -3.5]) cube([5, 5, case_top_depth-3]);
+// color("purple") translate([case_width-15, 10, 1.5]) cube([5, 5, case_bottom_depth-5]);
+// color("violet") translate([case_width-15, 10, 1.5+case_bottom_depth-5]) cube([5, 5, 3]);
+// color("purple") translate([0, -20, -3.5]) cube([5, 5, case_top_depth-3]);
