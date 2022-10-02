@@ -239,8 +239,8 @@ module case_top(board_width, board_height, board_radius) {
 
 // Rendering the modules
 
-//translate([3, 4, 12.5]) color("lightblue") esp8266(esp8266_width, esp8266_height, esp8266_depth, esp8266_pinheader_depth);
-//addon_board(addon_width, addon_height, addon_depth, edge_radius);
+translate([3, 4, 12.5]) color("lightblue") esp8266(esp8266_width, esp8266_height, esp8266_depth, esp8266_pinheader_depth);
+addon_board(addon_width, addon_height, addon_depth, edge_radius);
 
 translate([-2.5, -2.5, -3.5]) color("lightgreen") case_bottom(addon_width, addon_height, edge_radius);
 translate([-2.5, -12.5, 5.5]) color("lightgreen")
