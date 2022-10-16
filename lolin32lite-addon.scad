@@ -264,6 +264,8 @@ module case_top(board_width, board_height, case_depth, board_radius) {
         translate([25, 24, 2.30]) cylinder(d=3, h=8);
         // Viewport for user LED
         translate([48, 11, 2.30]) cylinder(d=3, h=8);
+        // Opening for Reset button
+        translate([10, 20, 3.1]) cylinder(d=2, h=8);
     }
 }
 
