@@ -252,7 +252,7 @@ module funnel(hole_radius) {
 module case_top(board_width, board_height, case_depth, board_radius) {
     funnel_translation = [2.5 + .25 + jst_connector + 10 - 
                    150*mil + 2000*mil -1.5 + sensor_width - 2,
-                   2.5 + addon_height/2 - sensor_height/2 + 1, 3];
+                   2.5 + addon_height/2 - sensor_height/2 + 2, 3];
     hole_radius = 3;
     difference(){
         union(){
@@ -264,6 +264,8 @@ module case_top(board_width, board_height, case_depth, board_radius) {
         translate([25, 24, 2.30]) cylinder(d=3, h=8);
         // Viewport for user LED
         translate([48, 11, 2.30]) cylinder(d=3, h=8);
+        // Opening for Reset button
+        translate([10, 20, 3.1]) cylinder(d=2, h=8);
     }
 }
 
