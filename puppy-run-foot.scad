@@ -4,11 +4,11 @@
 // https://creativecommons.org/licenses/by-sa/2.0/legalcode
 
 $fn = 36;
-WIDTH = 50;
+WIDTH = 30;
 HEIGHT = 30;
 SHIFT_WIDTH = 5;
 SHIFT_HEIGHT = SHIFT_WIDTH;
-DEPTH = 12;
+DEPTH = 7.6;
 RADIUS = 2;
 
 GRATE_SHIFT = 2;
@@ -37,8 +37,8 @@ module foot_base() {
 }
 
 module grate_fit() {
-    rotate([0, 90, 0])
-    cylinder(r=RUN_GRATE_RADIUS, h=WIDTH);
+    translate([-WIDTH/2,0,0]) rotate([0, 90, 0])
+    cylinder(r=RUN_GRATE_RADIUS, h=2*WIDTH);
 }
 
 module grate_slit() {
