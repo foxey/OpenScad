@@ -8,11 +8,11 @@ WIDTH = 30;
 HEIGHT = 30;
 SHIFT_WIDTH = 5;
 SHIFT_HEIGHT = SHIFT_WIDTH;
-DEPTH = 7.6;
+DEPTH = 7.1;
 RADIUS = 2;
 
-GRATE_SHIFT = 2;
-GRATE_SLIT_HEIGHT = 3;
+GRATE_SHIFT = 1.5;
+GRATE_SLIT_HEIGHT = 3.4;
 
 // Physical parameters;
 
@@ -47,7 +47,7 @@ module grate_slit() {
     union(){
         translate([0,-slit_height/2, 0])
         cube([WIDTH, slit_height, 2*RUN_GRATE_RADIUS]);
-        translate([0, 0, height/4]) rotate([45, 0, 0])
+        translate([0, 0, height/6]) rotate([45, 0, 0])
             cube([WIDTH, height, height]);
     }
 }
