@@ -38,12 +38,14 @@ Z_clearance = 1.5;
 
 // Wall thickness
 D = 2;
+D_bottom = 1.2;
+D_top = D_bottom;
 
 // Dimensions of the case
 X = X_board + 2*D + .5; // board + 2* wall thickness + clearing
 Y = Y_board + 2*D + .5; // board + 2* wall thickness + clearing
-Z = Z_board + 2*D + 1.5; // board + 2* wall thickness + clearing
-Z_bottom = 14 + D + Z_usb_connector/2 + 1.5; // top-top + wall thickness + connector middle line + pin clearing
+Z = Z_board + 2*D_bottom + 1.5; // board + 2* wall thickness + clearing
+Z_bottom = 14 + D_bottom + Z_usb_connector/2 + 1.5; // top-top + wall thickness + connector middle line + pin clearing
 Z_top = Z - Z_bottom;
 
 // Outer corner radius
@@ -89,8 +91,8 @@ module hollow_roundcube(size, r, d, d_bottom, r_fraction=0) {
     }
 }
 
-module hollow_roundcube_with_bottom(size, r, d) {
-    hollow_roundcube(size, r, d, d, R_fraction);
+module hollow_roundcube_with_bottom(size, r, d, d_bottom) {
+    hollow_roundcube(size, r, d, d_bottom, R_fraction);
 }
 
 module top_ridge(size, r, d) {
@@ -111,18 +113,18 @@ module bottom_ridge(size, r, d) {
         hollow_roundcube(size_2, r, bottom_ridge_fraction_2*d + TOL, 0);
 }
 
-module case_bottom(size, r, d) {
+module case_bottom(size, r, d, d_bottom) {
     difference(){
         size = size + [0, 0, bottom_Z_ridge];
-        hollow_roundcube_with_bottom(size, r, d);
+        hollow_roundcube_with_bottom(size, r, d, d_bottom);
         translate([0, 0, size[2] - bottom_Z_ridge])
            bottom_ridge(size, r, d);
     }
 }
 
-module case_top(size, r, d) {
+module case_top(size, r, d, d_bottom) {
     difference(){
-        hollow_roundcube_with_bottom(size, r, d);
+        hollow_roundcube_with_bottom(size, r, d, d_bottom);
         translate([0, 0, size[2] - top_Z_ridge])
            top_ridge(size, r, d);
     }
@@ -188,10 +190,10 @@ module pcb_corner_cuts(size, r, d) {
 difference(){
     union() {
         difference() {
-            case_bottom([X, Y, Z_bottom], R, D);
+            case_bottom([X, Y, Z_bottom], R, D, D_bottom);
             pcb_corner_cuts([X, Y, Z_bottom + bottom_Z_ridge], R, D);
         }
-        translate([0, 0, D])
+        translate([0, 0, D_bottom])
             pcb_stand_set();
     }
     connector_cuts(-(X - D)/2, Z_bottom, bottom_Z_ridge);
@@ -200,7 +202,7 @@ difference(){
 
 translate([-X - 20, 0, 0]) {
     difference(){
-        case_top([X, Y, Z_top], R, D);
+        case_top([X, Y, Z_top], R, D, D_top);
         connector_cuts((X-D)/2, Z_top, top_Z_ridge);
         //translate([0, 0, -50]) cube(size=[100, 100, 100], center=false);
     }
