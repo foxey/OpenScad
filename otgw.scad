@@ -4,15 +4,15 @@
 // https://creativecommons.org/licenses/by-sa/2.0/legalcode
 
 // Number of facets in a circle
-// $fn = 16;
-$fn = 64;
+$fn = 16;
+// $fn = 64;
 
 // Tolerance to prevent non manifold objects (0 height)
 TOL = .1;
 
 // Board dimensions
-X_board = 34;
-Y_board = 81;
+X_board = 34.5;
+Y_board = 81.5;
 Z_board = 24;
 Z_pcb = 1.5;
 
@@ -24,14 +24,21 @@ Y_usb_connector = 10;
 Z_usb_connector = 7;
 R_usb_connector = 3.5;
 
+// Connector skirt
+Y_usb_connector_skirt = 12;
+Z_usb_connector_skirt = 9;
+R_usb_connector_skirt = 4.5;
+
+
 // Connection positions
-Y_screw_connector_from_edge = 9;
+Y_screw_connector_from_edge = 8;
+Y_screw_connector_from_center = 1;
 Y_usb_connector_from_edge = 8;
 
 // PCB hole dimensions
 R_hole = 1.5;
-X_hole_distance = X_board - 2*R_hole - 2*1.8;
-Y_hole_distance = Y_board - 2*R_hole - 2*1.8;
+X_hole_distance = X_board - 2*R_hole - 2*1.5;
+Y_hole_distance = Y_board - 2*R_hole - 2*1.5;
 
 // Clearance for the through hole pins under the PCB
 Z_clearance = 1.5;
@@ -55,14 +62,14 @@ R_fraction = .4;
 
 // Top ridge dimensions
 top_Z_ridge = 3.1;
-top_ridge_fraction_1 = .45;
-top_ridge_fraction_2 = .65;
-top_z_fraction = .5333;
+top_ridge_fraction_1 = .4;
+top_ridge_fraction_2 = .5;
+top_z_fraction = .6666;
 
 // Bottom ridge dimensions
 bottom_Z_ridge = 3;
 bottom_ridge_fraction_1 = .4;
-bottom_ridge_fraction_2 = .6;
+bottom_ridge_fraction_2 = .5;
 bottom_z_fraction = .5;
 
 module roundcube(size, r, r_fraction=0) {
@@ -174,10 +181,15 @@ module connector_cut(connector_size, r_connector, z_ridge) {
 module connector_cuts(connector_x_shift, connector_z_shift, connector_z_ridge) {
     translate([connector_x_shift, (Y_board-Y_screw_connector)/2 - Y_screw_connector_from_edge, connector_z_shift])
     connector_cut([D+2*TOL, Y_screw_connector, Z_screw_connector], R_screw_connector, connector_z_ridge);
-translate([connector_x_shift, 0, connector_z_shift])
+translate([connector_x_shift, Y_screw_connector_from_center, connector_z_shift])
     connector_cut([D+2*TOL, Y_screw_connector, Z_screw_connector], R_screw_connector, connector_z_ridge);
 translate([connector_x_shift, -(Y_board-Y_usb_connector)/2 + Y_usb_connector_from_edge, connector_z_shift])
     connector_cut([D+2*TOL, Y_usb_connector, Z_usb_connector], R_usb_connector, connector_z_ridge);
+}
+
+module connector_skirt(connector_x_shift, connector_z_shift) {
+    translate([connector_x_shift, -(Y_board-Y_usb_connector)/2 + Y_usb_connector_from_edge, connector_z_shift])
+    connector([D+2*TOL, Y_usb_connector_skirt, Z_usb_connector_skirt], R_usb_connector_skirt);
 }
 
 module pcb_corner_cuts(size, r, d) {
@@ -185,18 +197,23 @@ module pcb_corner_cuts(size, r, d) {
         cube([r, r, size[2]]);
     translate([-size[0]/2 + D, -size[1]/2 + D, d])
         cube([r, r, size[2]]);
+    translate([size[0]/2 - D -r, size[1]/2 - D - r, d])
+        cube([r, r, size[2]]);
+    translate([size[0]/2 - D - r, -size[1]/2 + D, d])
+        cube([r, r, size[2]]);
 }
 
 difference(){
     union() {
         difference() {
             case_bottom([X, Y, Z_bottom], R, D, D_bottom);
-            pcb_corner_cuts([X, Y, Z_bottom + bottom_Z_ridge], R, D);
+            pcb_corner_cuts([X, Y, Z_bottom + bottom_Z_ridge], R, D_bottom);
         }
         translate([0, 0, D_bottom])
             pcb_stand_set();
     }
     connector_cuts(-(X - D)/2, Z_bottom, bottom_Z_ridge);
+    connector_skirt(-X/2+TOL, Z_bottom);
     //translate([0, 0, -50]) cube(size=[100, 100, 100], center=false);
 }
 
@@ -204,6 +221,7 @@ translate([-X - 20, 0, 0]) {
     difference(){
         case_top([X, Y, Z_top], R, D, D_top);
         connector_cuts((X-D)/2, Z_top, top_Z_ridge);
-        //translate([0, 0, -50]) cube(size=[100, 100, 100], center=false);
+        connector_skirt(X/2-TOL, Z_top);
+       // translate([0, 0, -50]) cube(size=[100, 100, 100], center=false);
     }
 }
