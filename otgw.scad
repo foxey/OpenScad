@@ -4,8 +4,8 @@
 // https://creativecommons.org/licenses/by-sa/2.0/legalcode
 
 // Number of facets in a circle
-$fn = 16;
-// $fn = 64;
+// $fn = 16;
+$fn = 64;
 
 // Tolerance to prevent non manifold objects (0 height)
 TOL = .1;
@@ -31,8 +31,8 @@ R_usb_connector_skirt = 4.5;
 
 
 // Connection positions
-Y_screw_connector_from_edge = 8;
-Y_screw_connector_from_center = 1;
+Y_screw_connector_from_edge = 9;
+Y_screw_connector_from_center = 0;
 Y_usb_connector_from_edge = 8;
 
 // PCB hole dimensions
@@ -62,18 +62,18 @@ R_fraction = .4;
 
 // Top ridge dimensions
 top_Z_ridge = 3.1;
-top_ridge_fraction_1 = .4;
-top_ridge_fraction_2 = .5;
-top_z_fraction = .6666;
+top_ridge_fraction_1 = .425;
+top_ridge_fraction_2 = .6;
+top_z_fraction = .6;
 
 // Bottom ridge dimensions
 bottom_Z_ridge = 3;
-bottom_ridge_fraction_1 = .4;
-bottom_ridge_fraction_2 = .5;
-bottom_z_fraction = .5;
+bottom_ridge_fraction_1 = .45;
+bottom_ridge_fraction_2 = .6;
+bottom_z_fraction = .6;
 
-module roundcube(size, r, r_fraction=0) {
-    assert(r_fraction>=0 && r_fraction<=1, "r_fraction should in [0,1]")
+module roundcube(size, r, slant_fraction=0) {
+    assert(slant_fraction>=0 && slant_fraction<=1, "slant_fraction should in [0,1]")
     assert(size[0] >= 2*r, "x dimension should be bigger than 2*r  "); 
     assert(size[1] >= 2*r, "y dimension should be bigger than 2*r"); 
     translate([-size[0]/2, -size[1]/2, 0]) {
@@ -81,8 +81,8 @@ module roundcube(size, r, r_fraction=0) {
             for (x=[0, size[0] - 2*r]) {
                 for (y=[0, size[1] - 2*r]) {
                     translate([x + r, y + r, 0]) {
-                        translate([0, 0, r_fraction*r]) cylinder(r=r, h=size[2] - r_fraction*r, center=false);
-                        cylinder(r1=(1-r_fraction)*r, r2=r, h=r_fraction*r, center=false);
+                        translate([0, 0, slant_fraction*r]) cylinder(r=r, h=size[2] - slant_fraction*r, center=false);
+                        cylinder(r1=(1-slant_fraction)*r, r2=r, h=slant_fraction*r, center=false);
                     }
                 }  
             }
@@ -90,16 +90,32 @@ module roundcube(size, r, r_fraction=0) {
     }
 }
 
-module hollow_roundcube(size, r, d, d_bottom, r_fraction=0) {
+module hollow_roundcube(size, r, d, d_bottom, slant_fraction=0) {
     assert(r > d, "radius (r) should be larger than the wall thickness (d)");
     difference() {
-        roundcube(size, r, r_fraction);
+        roundcube(size, r, slant_fraction);
         translate([0, 0, d_bottom]) roundcube(size - [2*d, 2*d, -2*TOL], r - d);
     }
 }
 
 module hollow_roundcube_with_bottom(size, r, d, d_bottom) {
     hollow_roundcube(size, r, d, d_bottom, R_fraction);
+}
+
+module ridge_corners(size, r, d, d_bottom) {
+    difference() {
+        hollow_roundcube_with_bottom(size, r, d, d_bottom);
+        x_1 = size[0] - 2*r;
+        y_1 = size[1];
+        x_shift_1 = -x_1/2;
+        y_shift_1 = -size[1]/2;
+        translate([x_shift_1, y_shift_1, 0]) cube([x_1, y_1, size[2]]);
+        x_2 = size[0];
+        y_2 = size[1] - 2*r;
+        x_shift_2 = -size[0]/2;
+        y_shift_2 = -y_2/2;
+        translate([x_shift_2, y_shift_2, 0]) cube([x_2, y_2, size[2]]);
+    }
 }
 
 module top_ridge(size, r, d) {
@@ -109,15 +125,36 @@ module top_ridge(size, r, d) {
     size_2 = size - [2*(1 - top_ridge_fraction_2)*d,
                      2*(1 - top_ridge_fraction_2)*d,
                       size[2] - top_z_fraction*top_Z_ridge];
-        roundcube(size_1, r);
-        roundcube(size_2, r);
+    corner_size = size - [2*(1 - top_ridge_fraction_2)*d,
+                     2*(1 - top_ridge_fraction_2)*d,
+                     size[2] - top_Z_ridge - TOL];
+    roundcube(size_1, r - (size[0]-size_1[0])/2);
+    roundcube(size_2, r - (size[0]-size_2[0])/2);
+    ridge_corners(corner_size, r - (size[0]-size_2[0])/2, d, -TOL);
+}
+
+module ridge_corners(size, r, d, d_bottom) {
+    difference() {
+        hollow_roundcube_with_bottom(size, r, d, d_bottom);
+        x_1 = size[0] - 2*r;
+        y_1 = size[1];
+        x_shift_1 = -x_1/2;
+        y_shift_1 = -size[1]/2;
+        translate([x_shift_1, y_shift_1, 0]) cube([x_1, y_1, size[2]]);
+        x_2 = size[0];
+        y_2 = size[1] - 2*r;
+        x_shift_2 = -size[0]/2;
+        y_shift_2 = -y_2/2;
+        translate([x_shift_2, y_shift_2, 0]) cube([x_2, y_2, size[2]]);
+    }
 }
 
 module bottom_ridge(size, r, d) {
     size_1 = size + [TOL, TOL, bottom_Z_ridge - size[2] + TOL];
     size_2 = size + [TOL, TOL, top_z_fraction*bottom_Z_ridge - size[2]];
-        hollow_roundcube(size_1, r, bottom_ridge_fraction_1*d + TOL, -TOL);
-        hollow_roundcube(size_2, r, bottom_ridge_fraction_2*d + TOL, 0);
+    hollow_roundcube(size_1, r, bottom_ridge_fraction_1*d + TOL, -TOL);
+    ridge_corners(size_1, r, bottom_ridge_fraction_2*d + TOL, -TOL);
+    hollow_roundcube(size_2, r, bottom_ridge_fraction_2*d + TOL, 0);
 }
 
 module case_bottom(size, r, d, d_bottom) {
@@ -203,25 +240,56 @@ module pcb_corner_cuts(size, r, d) {
         cube([r, r, size[2]]);
 }
 
-difference(){
-    union() {
-        difference() {
-            case_bottom([X, Y, Z_bottom], R, D, D_bottom);
-            pcb_corner_cuts([X, Y, Z_bottom + bottom_Z_ridge], R, D_bottom);
-        }
-        translate([0, 0, D_bottom])
-            pcb_stand_set();
-    }
-    connector_cuts(-(X - D)/2, Z_bottom, bottom_Z_ridge);
-    connector_skirt(-X/2+TOL, Z_bottom);
-    //translate([0, 0, -50]) cube(size=[100, 100, 100], center=false);
+module led_viewports() {
+    r = 1.5;
+    h = D;
+    x = -X/2 + D + 4;
+    y = -Y/2 + D;
+    z = 0.2;
+    translate([x, y + 32, z]) cylinder(r=r, h=h);
+    translate([x, y + 59.5, z]) cylinder(r=r, h=h);
+    translate([X/2 - D - 2, y + 8.5, z]) cylinder(r=r, h=h);
 }
 
-translate([-X - 20, 0, 0]) {
+module complete_bottom() {
+    difference(){
+        union() {
+            difference() {
+                case_bottom([X, Y, Z_bottom], R, D, D_bottom);
+                pcb_corner_cuts([X, Y, Z_bottom - D_bottom], R, D_bottom);
+            }
+            translate([0, 0, D_bottom])
+                pcb_stand_set();
+        }
+        connector_cuts(-(X - D)/2, Z_bottom, bottom_Z_ridge);
+        connector_skirt(-X/2+TOL, Z_bottom);
+    }
+}
+
+module complete_top() {
     difference(){
         case_top([X, Y, Z_top], R, D, D_top);
         connector_cuts((X-D)/2, Z_top, top_Z_ridge);
         connector_skirt(X/2-TOL, Z_top);
-       // translate([0, 0, -50]) cube(size=[100, 100, 100], center=false);
+        led_viewports();
+    }
+}
+
+// ---------------------------------- MAIN ---------------------------------- //
+orientation = 0;
+cut = 0;
+
+difference(){
+    complete_bottom();
+    if (cut == 1)
+        translate([-50, 0*(Y-D)/2, -.1]) cube(size=[100, 100, 100], center=false);
+}
+
+translate([-(1 - orientation)*(X + 20), 0, orientation*(Z+TOL)]) {
+    rotate([0, orientation*180, 0])
+        difference(){
+            complete_top();
+    if (cut == 1)
+        translate([-50, 0*(Y-D)/2, -50]) cube(size=[100, 100, 100], center=false);
     }
 }
