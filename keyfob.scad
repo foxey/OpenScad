@@ -18,9 +18,9 @@
 $fn = 72;
 TOL = .1;
 
-PCB_X = 32;
+PCB_X = 32.5;
 PCB_Y = 39;
-PCB_Z = 1;
+PCB_Z = 1.1;
 
 Z_BATTERY = 3.5;
 SLIT_X = 2;
@@ -86,6 +86,10 @@ module button_cutout_2() {
     cube([BUTTON_X, BUTTON_Y_POSITION + BUTTON_Y - CASE_KEYHOLE_Y/2, BUTTON_Z]);
 }
 
+module punch_hole() {
+    cube([WALL_THICKNESS, 2*WALL_THICKNESS, WALL_THICKNESS]);
+}
+
 module cutout() {
             translate([0, 0, WALL_THICKNESS])
         union() {
@@ -98,6 +102,8 @@ module cutout() {
                 button_cutout();
             translate([(CASE_X - BUTTON_X)/2, CASE_KEYHOLE_Y/2, 0])
                 button_cutout_2();
+            translate([(CASE_X - WALL_THICKNESS)/2, CASE_Y - WALL_THICKNESS, 0])
+                punch_hole();
         }
 }
 
@@ -121,5 +127,5 @@ module keyfob_case() {
 }
 
 translate([0, 0, CASE_Y])
-    rotate([270, 0, 0])
+   rotate([270, 0, 90])
         keyfob_case();
