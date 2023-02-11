@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 $fn = 72;
-TOL = .1;
+TOL = .01;
 
 Z_LAYER = .15;
 TOLERANCE = .25;
@@ -26,25 +26,33 @@ WALL_THICKNESS = 2; // Wall thickness of the case
 X_BOARD = 87; // Lenght of the PCB
 Y_BOARD = 93;
 Z_BOARD = 5; // Height of the board (PCB + spacing for through hole pins)
+Z_PCB = 1.5; // Height of the PCB
+X_RELAY = 19;
+Y_RELAY = 63;
+Z_RELAY = 15;
+X_POS_RELAY = 12;
+Y_POS_RELAY = 3;
 D_BOARD_HOLE = 4;
 X_BOARD_HOLES = 80;
 Y_BOARD_HOLES = 85;
 
-X_BOARD_MARGIN = 24;
+X_BOARD_MARGIN_TOP = 20;
+X_BOARD_MARGIN_BOTTOM = 10;
+X_BOARD_MARGIN = X_BOARD_MARGIN_TOP + X_BOARD_MARGIN_BOTTOM;
 Y_BOARD_MARGIN_TOP = 20;
 Y_BOARD_MARGIN_BOTTOM = 1;
 Y_BOARD_MARGIN = Y_BOARD_MARGIN_TOP + Y_BOARD_MARGIN_BOTTOM;
 X_CASE = X_BOARD + X_BOARD_MARGIN; // Inside length of the case
 Y_CASE = Y_BOARD + Y_BOARD_MARGIN; // Inside width of the case
-Z_CASE = 33; // Height of the case (minus the top and bottom parts)
+Z_CASE = 32; // Height of the case (minus the top and bottom parts)
 Z_LID = -2*WALL_THICKNESS + Z_BOARD;
 
 SHIFT_FACTOR = .5; // fraction of corner radius for recess for top and bottom
 X_HOLE = X_CASE - 7; // Length between mount holes
 Y_HOLE = Y_CASE - 8; // Width between mount holes
 
-Z_PORT = 8;
-R_PORT = 2.5;
+R_PORT = 3.25;
+Z_PORT = Z_BOARD + 2*R_PORT;
 X_MAIN_PORT = 45;
 Y_OUTLET_PORT = 75;
 
@@ -59,9 +67,17 @@ M3BOLTHEAD_D= 5.5;
 D_STRAIN_RELIEF_CABLE = 6.5;
 X_MAINS_STRAIN_RELIEF = 40;
 Y_MAINS_STRAIN_RELIEF = 10;
-Z_MAINS_STRAIN_RELIEF = 2*WALL_THICKNESS + Z_BOARD + D_STRAIN_RELIEF_CABLE/2;
-D_STRAIN_RELIEF_SCREW = 2;
+Z_MAINS_STRAIN_RELIEF = WALL_THICKNESS + D_STRAIN_RELIEF_CABLE/2;
+D_STRAIN_RELIEF_SCREW = 1.5;
 
+X_POS_PUSH_BUTTON_1 = -R_CORNER + X_BOARD_MARGIN_TOP + X_POS_RELAY + X_RELAY + 6;
+Y_POS_PUSH_BUTTON_1 = (Y_CASE - R_CORNER)*3/4;
+X_POS_PUSH_BUTTON_2 = X_POS_PUSH_BUTTON_1;
+Y_POS_PUSH_BUTTON_2 = (Y_CASE - 2*R_CORNER)/2;
+X_POS_LED = X_POS_PUSH_BUTTON_1;
+Y_POS_LED = (Y_CASE - R_CORNER)/4;
+D_PUSH_BUTTON = 12;
+D_LED = 8;
 
 // Module: BCP_stands - 4 cylinders centered at the holes in the PCB
 module PCB_stands(d, h) {
@@ -79,8 +95,44 @@ module PCB_stands(d, h) {
 // Module: BCP - Mock of the PCB with connectors
 module PCB() {
     difference() {
-        cube([X_BOARD, Y_BOARD, Z_BOARD]);
+        union() {
+            cube([X_BOARD, Y_BOARD, Z_BOARD]);
+            translate([X_POS_RELAY, Y_BOARD - Y_POS_RELAY - Y_RELAY, -Z_RELAY])
+                cube([X_RELAY, Y_RELAY, Z_RELAY]);
+            translate([X_BOARD - 40, Y_BOARD - 37, -14])
+                cylinder(d=8, h=14);
+            translate([X_BOARD - 35, Y_BOARD - 60, -14])
+                cylinder(d=8, h=14);
+            
+        }
         PCB_stands(D_BOARD_HOLE, Z_BOARD + 2*TOL);
+    }
+}
+
+
+// Module: push_button - Mock of the push button
+module push_button() {
+    color("darkgreen")
+        cylinder(d=12, h=4);
+    color("black") {
+    translate([0, 0, 4])
+        cylinder(d1=14, d2=18, h=6);
+    translate([0, 0, 10])
+        cylinder(d=12, h=9);
+    translate([0, 0, 19])
+        cylinder(d=10.5, h=20);
+    }
+}
+
+
+// Module: LED - Mock of the LED with holder
+module LED() {
+    color("darkred")
+        sphere(d=5);
+    color("lightgrey") {
+        cylinder(d1=8, d2=9, h=4);
+        translate([0, 0, 4])
+            cylinder(d=7.5, h=9);
     }
 }
 
@@ -90,7 +142,7 @@ module PCB() {
 // rotate = orientation of the flat sides
 module m3nut(Z, rotate=0) {
     $fn=6;
-    rotate([0,0,rotate]) cylinder(d=6.2,h=Z);
+    rotate([0,0,rotate]) cylinder(d=6.2, h=Z);
 }
 
 
@@ -140,7 +192,7 @@ module base_case_top(thickness, shift_factor) {
 module case_top(){
     difference(){
         base_case_top(WALL_THICKNESS, SHIFT_FACTOR);
-        base_case_top(0*WALL_THICKNESS/2, SHIFT_FACTOR);
+        translate([0, 0, TOL]) base_case_top(0*WALL_THICKNESS/2, SHIFT_FACTOR);
     }
 }
 
@@ -149,7 +201,7 @@ module case_top(){
 module nut_stand(){
     rotate([180, 0, 0])
         difference(){
-            h = Z_CASE + 2*WALL_THICKNESS - TOLERANCE;
+            h = Z_CASE + WALL_THICKNESS + R_CORNER - TOLERANCE;
             hull(){
                 cylinder(r=R_CORNER+WALL_THICKNESS-TOL, h=h);
                 intersection() {
@@ -172,7 +224,7 @@ module nut_stand(){
 // Module: nut_stands - 4 nut_stand's positioned in each corner of the case
 module nut_stands(){
     difference() {
-        z_offset = Z_CASE + 2*WALL_THICKNESS - TOLERANCE;
+        z_offset = Z_CASE + WALL_THICKNESS + R_CORNER - TOLERANCE;
         union() {
             translate([0, 0, z_offset]) rotate([0, 0, 45]) nut_stand();
             translate([X_HOLE, 0, z_offset]) rotate([0, 0, 135]) nut_stand();
@@ -321,12 +373,12 @@ module full_case() {
             bolt_stands();
         }
         bolt_holes();
-// Mains port
-    translate([X_MAIN_PORT, -2*WALL_THICKNESS, Z_CASE + R_PORT])
-        side_port(4);
-// Outlet port
-    translate([-2*WALL_THICKNESS, Y_OUTLET_PORT, Z_CASE + R_PORT])
-        side_port(5, 90);
+        translate([X_POS_PUSH_BUTTON_1, Y_POS_PUSH_BUTTON_1, -TOL - WALL_THICKNESS - R_CORNER])
+            cylinder(d=D_PUSH_BUTTON, h=2*WALL_THICKNESS);
+        translate([X_POS_PUSH_BUTTON_2, Y_POS_PUSH_BUTTON_2, -TOL - WALL_THICKNESS - R_CORNER])
+            cylinder(d=D_PUSH_BUTTON, h=2*WALL_THICKNESS);
+        translate([X_POS_LED, Y_POS_LED, -TOL - WALL_THICKNESS - R_CORNER])
+            cylinder(d=D_LED, h=2*WALL_THICKNESS);
     }
 }
 
@@ -382,25 +434,36 @@ module full_lid() {
                             }
                             case_top();
                             nut_stands();
-                            translate([X_MAIN_PORT - X_MAINS_STRAIN_RELIEF/2, Y_BOARD - R_CORNER + Y_BOARD_MARGIN - Y_MAINS_STRAIN_RELIEF - .5, -2*WALL_THICKNESS])
-                                mains_strain_relief();
-                            translate([Y_MAINS_STRAIN_RELIEF/2 + WALL_THICKNESS -.5, Y_CASE - 4*WALL_THICKNESS - Y_OUTLET_PORT - X_MAINS_STRAIN_RELIEF/2, -2*WALL_THICKNESS])
-                                rotate([0, 0, 90])
-                                mains_strain_relief();
                         }
                     }
+            // Wall mount openings
             translate([X_CASE/4, 2*Y_CASE/3, z_offset]) wall_mount_hole();
             translate([3*X_CASE/4, 2*Y_CASE/3, z_offset]) wall_mount_hole();
+            // Mains port
+            translate([X_MAIN_PORT, -2.5*WALL_THICKNESS, -Z_MAINS_STRAIN_RELIEF + D_STRAIN_RELIEF_CABLE/2+0*TOL])
+                side_port(6.5);
+            // Outlet port
+            translate([-2.5*WALL_THICKNESS, Y_OUTLET_PORT, -Z_MAINS_STRAIN_RELIEF + D_STRAIN_RELIEF_CABLE/2+TOL])
+                side_port(6.5, 90);
         }
+        // Basis of strain reliefs
+        translate([0, Y_HOLE, WALL_THICKNESS])
+                rotate([180, 0, 0]) {
+                    translate([X_MAIN_PORT - X_MAINS_STRAIN_RELIEF/2, Y_BOARD - R_CORNER + Y_BOARD_MARGIN - Y_MAINS_STRAIN_RELIEF - .5, - R_CORNER])
+                        mains_strain_relief();
+                    translate([Y_MAINS_STRAIN_RELIEF/2 + WALL_THICKNESS - 1, Y_CASE - 4*WALL_THICKNESS - Y_OUTLET_PORT - X_MAINS_STRAIN_RELIEF/2, -2*WALL_THICKNESS])
+                        rotate([0, 0, 90])
+                        mains_strain_relief();
+                }
 
-        // Cover to protect backside PCB
+        // Cover to protect backside PCB from wall mount screws
         translate([X_CASE/4, 2*Y_CASE/3, z_offset]) wall_mount_hole_cover();
         translate([3*X_CASE/4, 2*Y_CASE/3, z_offset]) wall_mount_hole_cover();
-        translate([X_BOARD_MARGIN/2 -R_CORNER, Y_BOARD_MARGIN_TOP - R_CORNER, z_offset + 0]) {
+        translate([X_BOARD_MARGIN_TOP -R_CORNER, Y_BOARD_MARGIN_TOP - R_CORNER, z_offset + 0]) {
             difference() {
                 union() {
                     PCB_stands(D_BOARD_HOLE + 2, 6.5);
-                    translate([0, 0, -1]) PCB_stands(D_BOARD_HOLE - 1, 7.5);
+                    translate([0, 0, -1]) PCB_stands(D_BOARD_HOLE -.75, 7.5);
                 }
                 translate([0, 0, -1.5]) PCB_stands(D_BOARD_HOLE - 2, 10);
             }
@@ -413,11 +476,11 @@ difference() {
         full_case();
         *translate([0, 0, Z_CASE + Z_BOARD + WALL_THICKNESS + TOL]) full_lid();
     }
-    *translate([0, -10, -10]) cube([20 + X_CASE, 20 + Y_CASE, 25]);
+    *translate([70, -10, -10]) cube([20 + X_CASE, 20 + Y_CASE, 25]);
 }
 
 *color("lightblue")
-    translate([-R_CORNER + X_BOARD_MARGIN/2, -R_CORNER + Y_BOARD_MARGIN_TOP, Z_CASE + Z_BOARD + WALL_THICKNESS + TOL])
+    translate([-R_CORNER + X_BOARD_MARGIN_TOP, -R_CORNER + Y_BOARD_MARGIN_TOP, Z_CASE + Z_BOARD + WALL_THICKNESS + TOL - Z_PCB])
         PCB();
 
 translate([0, -.2*Y_CASE, WALL_THICKNESS])
@@ -425,6 +488,13 @@ translate([0, -.2*Y_CASE, WALL_THICKNESS])
         full_lid();
 
 *color("lightblue")
-    translate([-R_CORNER + X_BOARD_MARGIN/2, -.2*Y_CASE + R_CORNER - Y_BOARD_MARGIN_TOP, Z_BOARD])
+    translate([-R_CORNER + X_BOARD_MARGIN_TOP, -.2*Y_CASE + R_CORNER - Y_BOARD_MARGIN_TOP, Z_BOARD])
     rotate([-180, 0, 0])
         PCB();
+
+*translate([X_POS_PUSH_BUTTON_1, Y_POS_PUSH_BUTTON_1, -10 - WALL_THICKNESS - R_CORNER])
+    push_button();
+*translate([X_POS_PUSH_BUTTON_2, Y_POS_PUSH_BUTTON_2, -10 - WALL_THICKNESS - R_CORNER])
+    push_button();
+*translate([X_POS_LED, Y_POS_LED, -4 - WALL_THICKNESS - R_CORNER])
+    LED();
