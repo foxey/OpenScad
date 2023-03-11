@@ -19,8 +19,8 @@ $fn = 72;
 TOL = .1;
 
 BASE_X = 28;
-BASE_Z = 1;
-BASE_D = 12;
+BASE_Z = 2;
+BASE_D = 14;
 
 CASE_SCREW_Z = 3;
 
@@ -55,6 +55,12 @@ module wall_screw_hole() {
             cylinder(d2=0, d1=WALL_SCREW_OUTER_D, h=WALL_SCREW_CONE_Z);
 }
 
+module wall_screw_hole_cutout(angle=0) {
+    rotate(angle)
+        translate([0, 0, -TOL])
+            base(BASE_X, WALL_SCREW_INNER_D, BASE_Z + CASE_SCREW_Z + 2*TOL);
+}
+
 module screw_base() {
     cylinder(d=BASE_D, h=BASE_Z + CASE_SCREW_Z);
 }
@@ -63,7 +69,7 @@ module notch_hole() {
     base(NOTCH_X, NOTCH_D, BASE_Z + 2*TOL);
 }
 
-module wall_clip() {
+module wall_clip(angle) {
     difference() {
         union() {
             screw_base();
@@ -75,7 +81,15 @@ module wall_clip() {
             translate([BASE_X - (BASE_D - NOTCH_D)/2 - (BASE_D/2 - NOTCH_R_SCREW), 0, 0])
                 notch_hole();
         }
+        wall_screw_hole_cutout(angle);
     }
 }
 
-wall_clip();
+
+wall_clip(45);
+translate([0, 1.25*BASE_D, 0])
+    wall_clip(-45);
+translate([1.25*BASE_X, 0, 0])
+    wall_clip(135);
+translate([1.25*BASE_X, 1.25*BASE_D, 0])
+    wall_clip(-135);
