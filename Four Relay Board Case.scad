@@ -68,7 +68,10 @@ D_STRAIN_RELIEF_CABLE = 6.5;
 X_MAINS_STRAIN_RELIEF = 40;
 Y_MAINS_STRAIN_RELIEF = 10;
 Z_MAINS_STRAIN_RELIEF = WALL_THICKNESS + D_STRAIN_RELIEF_CABLE/2;
+Z_TOP_STRAIN_RELIEF = 5;
 D_STRAIN_RELIEF_SCREW = 1.5;
+D_TOP_STRAIN_RELIEF_SCREW = 2.5;
+D_STRAIN_RELIEF_SCREW_CAP = 5;
 
 X_POS_PUSH_BUTTON_1 = -R_CORNER + X_BOARD_MARGIN_TOP + X_POS_RELAY + X_RELAY + 6;
 Y_POS_PUSH_BUTTON_1 = (Y_CASE - R_CORNER)*3/4;
@@ -247,6 +250,26 @@ module mains_strain_relief() {
             cylinder(d=D_STRAIN_RELIEF_SCREW, h=Z_MAINS_STRAIN_RELIEF + 2*TOL);
         translate([.8*X_MAINS_STRAIN_RELIEF, Y_MAINS_STRAIN_RELIEF/2, -TOL])
             cylinder(d=D_STRAIN_RELIEF_SCREW, h=Z_MAINS_STRAIN_RELIEF + 2*TOL);
+    }
+}
+
+module top_strain_relief() {
+    difference() {
+        y_top = .8*Y_MAINS_STRAIN_RELIEF;
+        cube([X_MAINS_STRAIN_RELIEF, y_top, Z_TOP_STRAIN_RELIEF]);
+        translate([.5*X_MAINS_STRAIN_RELIEF, Y_MAINS_STRAIN_RELIEF + TOL, 1.3*Z_MAINS_STRAIN_RELIEF]) 
+            rotate([90, 0, 0])
+                cylinder(d=D_STRAIN_RELIEF_CABLE, h=Y_MAINS_STRAIN_RELIEF + 2*TOL);
+        translate([.2*X_MAINS_STRAIN_RELIEF, y_top/2, -TOL]) {
+            cylinder(d=D_TOP_STRAIN_RELIEF_SCREW, h=Z_MAINS_STRAIN_RELIEF + 2*TOL);
+            translate([0, 0, -TOL])
+                cylinder(d=D_STRAIN_RELIEF_SCREW_CAP, h=2 + TOL);
+        }
+        translate([.8*X_MAINS_STRAIN_RELIEF, y_top/2, -TOL]) {
+            cylinder(d=D_TOP_STRAIN_RELIEF_SCREW, h=Z_MAINS_STRAIN_RELIEF + 2*TOL);
+            translate([0, 0, -TOL])
+                cylinder(d=D_STRAIN_RELIEF_SCREW_CAP, h=2 + TOL);
+        }
     }
 }
 
@@ -471,6 +494,14 @@ module full_lid() {
     }
 }
 
+module washer() {
+    difference() {
+        height = 2;
+        translate([0, 0, height/2]) cube([6, 6, 2], center = true);
+        translate([0, 0, -TOL]) cylinder(d=2.5, h=height+2*TOL);
+    }
+}
+
 difference() {
     union() {
         full_case();
@@ -498,3 +529,6 @@ translate([0, -.2*Y_CASE, WALL_THICKNESS])
     push_button();
 *translate([X_POS_LED, Y_POS_LED, -4 - WALL_THICKNESS - R_CORNER])
     LED();
+
+translate([2*X_CASE, 0, 0]) washer();
+translate([2*X_CASE, 10, 0]) top_strain_relief();
