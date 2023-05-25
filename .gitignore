@@ -1,2 +1,4 @@
 *.stl
 *.gcode
+*.3mf
+*.mix

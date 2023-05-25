@@ -560,21 +560,21 @@ arm3_shift_y = BACKPLATE_Y; // - (TABLET_Y+TOL-diff)/2 + .9*diff;
 arm_shift_z = BASE_GRIP_Z - (ARM_Z + WALL_THICKNESS + M3NUT_Z + TOL);
 
 // Right bottom fixed arm in correct position with respect to full_base
-// translate([arm1_shift_x, arm1_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
-//     rotate([0, 0, -45])
-//         translate([ARM_Y + 2, -ARM_Y/2, 0])
-//             fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
-// // Left bottom fixed arm in correct position with respect to full_base
-// translate([arm2_shift_x, arm2_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
-//     rotate([0, 0, -135])
-//         translate([ARM_Y + 2, -ARM_Y/2, 0])
-//             fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+translate([arm1_shift_x, arm1_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
+    rotate([0, 0, -45])
+        translate([ARM_Y + 2, -ARM_Y/2, 0])
+            fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+// Left bottom fixed arm in correct position with respect to full_base
+translate([arm2_shift_x, arm2_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
+    rotate([0, 0, -135])
+        translate([ARM_Y + 2, -ARM_Y/2, 0])
+            fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
 
-// // Top moving arm in correct position with respect to full_base
-// translate([arm3_shift_x, arm3_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
-//     rotate([0, 0, 90])
-//         translate([ARM_Y/2 + 10.5, -ARM_Y/2, 0])
-//             moving_arm(FIXED_ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
+// Top moving arm in correct position with respect to full_base
+translate([arm3_shift_x, arm3_shift_y, arm_shift_z + WALL_THICKNESS + M3NUT_Z + TOL])
+    rotate([0, 0, 90])
+        translate([ARM_Y/2 + 10.5, -ARM_Y/2, 0])
+            moving_arm(FIXED_ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
 
 // // Arms only
 // fixed_arm(ARM_X, ARM_Y, ARM_Z, ARM_Z2, ARM_D);
