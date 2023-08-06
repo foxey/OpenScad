@@ -4,8 +4,8 @@
 // https://creativecommons.org/licenses/by-sa/2.0/legalcode
 
 // Number of facets in a circle
-$fn = 16;
-// $fn = 64;
+// $fn = 16;
+$fn = 64;
 
 // Tolerance to prevent non manifold objects (0 height)
 TOL = .1;
@@ -13,12 +13,12 @@ CLEARING = .5;
 
 // Board dimensions
 X_board = 14;
-Y_board = 18 + 18;
-Z_board = 16;
-Z_bottom_base = Z_board / 2;
+Y_board = 18 + 38;
+Z_board = 15;
+Z_bottom_base = 2/3 * Z_board;
 
 // Connector dimensions
-D_screw_connector = 4.5;
+D_screw_connector = 5.5;
 
 
 // Wall thickness
@@ -27,7 +27,7 @@ D_bottom = 2;
 D_top = D_bottom;
 
 // Strain relief dimensions
-D_STRAIN_RELIEF_CABLE = 4.5;
+D_STRAIN_RELIEF_CABLE = D_screw_connector;
 X_MAINS_STRAIN_RELIEF = 14 + CLEARING;
 Y_MAINS_STRAIN_RELIEF = 8;
 Z_MAINS_STRAIN_RELIEF = D + D_STRAIN_RELIEF_CABLE/2;
@@ -187,7 +187,11 @@ module top_strain_relief() {
     difference() {
         y_top = .8*Y_MAINS_STRAIN_RELIEF;
         x_top = X_MAINS_STRAIN_RELIEF - CLEARING;
-        cube([x_top, y_top, Z_TOP_STRAIN_RELIEF]);
+        union(){
+            translate([-.5*x_top/2, -.5*y_top/2, 0])
+               cube([1.5*x_top, 1.5*y_top, .2]);
+            cube([x_top, y_top, Z_TOP_STRAIN_RELIEF]);
+        }
         translate([.5*x_top, Y_MAINS_STRAIN_RELIEF + TOL, 1.3*Z_MAINS_STRAIN_RELIEF]) 
             rotate([90, 0, 0])
                 cylinder(d=D_STRAIN_RELIEF_CABLE, h=Y_MAINS_STRAIN_RELIEF + 2*TOL);
@@ -244,8 +248,8 @@ translate([-(1 - orientation)*(X + 10), 0, orientation*(Z+TOL)]) {
     }
 }
 
-translate([X, 0, 0]) {
+translate([X/2 + 10, 0, 0]) {
     top_strain_relief();
-    translate([0, 2*Y_MAINS_STRAIN_RELIEF, 0])
+    translate([0, Y_MAINS_STRAIN_RELIEF, 0])
         top_strain_relief();
 }
