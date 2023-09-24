@@ -183,6 +183,22 @@ module lamp_stand_cover() {
     }
 }
 
+module sensor_mount() {
+    difference() {
+        cylinder(r=10, h=9);
+        translate([5, -11/2, -TOL]) {
+            translate([0, 0, 0])
+                cylinder(r=25*mil, h=10);
+            translate([0, 11, -TOL])
+                cylinder(r=25*mil, h=10);
+        }
+        translate([0, 0, -TOL])
+            cylinder(d=3, h=10);
+        translate([0, 0, 3])
+            cylinder(d=sqrt(18)+.2, h=10);
+    }
+}
+
 main();
 // translate([23 + 10, -5+1.5, LAMP_STAND_HEIGHT])
 //     rotate([-90, 0, 0])
@@ -190,3 +206,5 @@ translate([120, 0, 0])
     lamp_stand_bridge();
 translate([120, 50, 0])
     lamp_stand_cover();
+translate([140, 50, 0])
+    sensor_mount();
