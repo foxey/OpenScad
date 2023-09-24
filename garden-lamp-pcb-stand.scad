@@ -167,9 +167,9 @@ module lamp_stand_cover() {
     difference() {
         rotate_extrude($fn=90){
             union(){
-                square([5,3]);
+                square([4,3]);
                 difference(){
-                translate([5,0])
+                translate([4,0])
                     circle(r=3);
                 translate([0,-5])
                 square([8,5]);
@@ -190,4 +190,3 @@ translate([120, 0, 0])
     lamp_stand_bridge();
 translate([120, 50, 0])
     lamp_stand_cover();
-
