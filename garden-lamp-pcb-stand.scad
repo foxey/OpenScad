@@ -184,20 +184,62 @@ module lamp_stand_cover() {
 }
 
 module sensor_mount() {
-    difference() {
-        cylinder(r=10, h=9);
-        translate([5, -11/2, -TOL]) {
-            translate([0, 0, 0])
-                cylinder(r=25*mil, h=10);
-            translate([0, 11, -TOL])
-                cylinder(r=25*mil, h=10);
+    h = 9;
+    union(){
+        difference() {
+            cylinder(r=10, h=h);
+            translate([5, -11/2, -TOL]) {
+                translate([0, 0, 0])
+                    cylinder(r=25*mil, h=h+2*TOL);
+                translate([0, 11, 0])
+                    cylinder(r=25*mil, h=h+2*TOL);
+            }
+            translate([0, 0, -TOL])
+                cylinder(d=3, h=h+2*TOL);
+            translate([1.5, 0, h-1.5])
+                rotate([0, 0, -45])
+                    cube([10, 10, 10]);
+            translate([0, 0, -TOL])
+                cylinder(d=sqrt(18)+.2, h=h+2*TOL);
         }
-        translate([0, 0, -TOL])
-            cylinder(d=3, h=10);
-        translate([0, 0, 3])
-            cylinder(d=sqrt(18)+.2, h=10);
+        translate([1.7, -1.5, 0])
+            cube([.6, 3, h]);
     }
 }
+
+module sensor_mount_top() {
+    h = 5;
+    e = 2;
+    d = 1.2;
+    difference() {
+        cylinder(r=10, h=h);
+        translate([5, -11/2, -TOL]) {
+            translate([0, 0, 0])
+                cylinder(r=1, h=h+2*TOL);
+            translate([0, 11, 0])
+                cylinder(r=1, h=h+2*TOL);
+        }
+        translate([5, -11/2, -TOL]) {
+            translate([0, 0, 0])
+                cylinder(r=2.1, h=2+TOL);
+            translate([0, 11, 0])
+                cylinder(r=2.1, h=2+TOL);
+        }
+        translate([-2.7, -2.7, h-d])
+            cube([15, 5.4, d+TOL]);
+        translate([2.7, -8.25, h-d])
+            difference(){
+                cube([15, 16.5, d+TOL]);
+                translate([0, -e, 0])
+                    rotate([0, 0, 45])
+                        cube([e, e, d+2*TOL]);
+                translate([0, 16.5-e/2, 0])
+                    rotate([0, 0, 45])
+                        cube([e, e, d+2*TOL]);
+            }
+    }
+}
+
 
 main();
 // translate([23 + 10, -5+1.5, LAMP_STAND_HEIGHT])
@@ -208,3 +250,5 @@ translate([120, 50, 0])
     lamp_stand_cover();
 translate([140, 50, 0])
     sensor_mount();
+translate([140, 75, 0])
+    sensor_mount_top();
