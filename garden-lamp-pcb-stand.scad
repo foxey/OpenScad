@@ -210,7 +210,7 @@ module sensor_mount() {
 module sensor_mount_top() {
     h = 5;
     e = 2;
-    d = 1.2;
+    d = 1.6;
     difference() {
         cylinder(r=10, h=h);
         translate([5, -11/2, -TOL]) {
